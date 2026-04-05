@@ -9,8 +9,10 @@ StockSense is a Bloomberg-terminal-inspired stock market analytics Single Page A
 
 ### FR-01 — Live Ticker Bar
 - Display a horizontally scrolling marquee of selected stock tickers across the top of the application
-- Each ticker shows: symbol, current price, percentage change
+- Each ticker item shows in order: **symbol** (bold cyan mono) · **exchange badge** (muted pill, e.g. `NSE`, `NASDAQ`) · **company short name** (first two words, hidden on small screens) · **live price** (with currency symbol) · **directional arrow** (▲ green / ▼ red) + **% change**
+- A vertical `│` divider separates each ticker entry for a Bloomberg-terminal aesthetic
 - Price flashes green on uptick, red on downtick
+- Subtle cyan top-border accent on the ticker strip
 
 ### FR-01b — Enterprise Header Banner
 - Full-width banner at the very top of every page
