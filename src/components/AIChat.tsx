@@ -25,52 +25,42 @@ const SUGGESTIONS = [
 ];
 
 const buildSystemPrompt = (stocks: Stock[]): string => {
-  // Build per-exchange open/closed status
+  // Per-exchange open/closed status (compact)
   const exchangeStatus = EXCHANGES.map(ex => {
     const open = isExchangeOpen(ex.name as Parameters<typeof isExchangeOpen>[0]);
-    return `${ex.name} (${ex.label}): ${open ? 'OPEN ✅' : 'CLOSED 🔴'}`;
-  }).join(', ');
+    return `${ex.name}:${open ? 'OPEN' : 'CLOSED'}`;
+  }).join(' | ');
 
+  // Compact per-stock line — only fields the AI needs for analysis
   const allStocks = stocks.map(s => {
     const open = isExchangeOpen(s.exchange);
-    return `${s.symbol} (${s.name}, ${s.exchange} [${open ? 'OPEN' : 'CLOSED'}]): price=${fmt(s.price, s.currency)}, change=${fmtPct(s.changePercent)}, PE=${s.fundamentals.peRatio}, forwardPE=${s.fundamentals.forwardPE}, EPS=${s.fundamentals.eps}, dividendYield=${s.fundamentals.dividendYield}%, beta=${s.fundamentals.beta}, ROE=${s.fundamentals.roe}%, revenueGrowth=${s.fundamentals.revenueGrowth}%, profitMargin=${s.fundamentals.profitMargin}%, analystTarget=${fmt(s.fundamentals.analystTarget, s.currency)}, marketCap=${fmtMktCap(s.fundamentals.marketCap, s.currency)}, sector=${s.sector}`;
+    const f = s.fundamentals;
+    return `${s.symbol}|${s.exchange}${open ? '' : '[C]'}|${fmt(s.price, s.currency)}|${s.changePercent > 0 ? '+' : ''}${s.changePercent.toFixed(2)}%|PE:${f.peRatio}|EPS:${f.eps}|DY:${f.dividendYield}%|beta:${f.beta}|ROE:${f.roe}%|tgt:${fmt(f.analystTarget, s.currency)}|mktcap:${fmtMktCap(f.marketCap, s.currency)}|${s.sector}`;
   }).join('\n');
 
-  return `You are StockSense AI, a Bloomberg-style market intelligence assistant with access to live market data.
-
-Current exchange market hours status:
-${exchangeStatus}
-
-Live market data for ALL ${stocks.length} stocks (exchange status shown as OPEN/CLOSED):
+  return `You are StockSense AI, a Bloomberg-style market intelligence assistant.
+Exchange status: ${exchangeStatus}
+Format: SYMBOL|EXCHANGE[C=closed]|PRICE|CHANGE|PE|EPS|DivYield|Beta|ROE|AnalystTarget|MarketCap|Sector
 ${allStocks}
 
-When asked to analyze a specific stock, ALWAYS use the exact live data above and respond with this structure:
-
-**[Company Name] ([SYMBOL]) Analysis**
-
-As of current market data, here is the live snapshot:
-- **Live Price:** [exact price from data] ([change%] today)
-- **Market Status:** [OPEN 🟢 / CLOSED 🔴 — based on the exchange status above]
-- **Exchange:** [exchange name] ([timezone] session)
-- **Market Cap:** [from data]
-- **P/E Ratio:** [from data]
-- **Dividend Yield:** [from data]%
-- **Analyst Target:** [from data] ([upside/downside]% from current)
+For stock analysis respond with this structure:
+**[Name] ([SYMBOL]) Analysis**
+- **Live Price:** [price] ([change] today)
+- **Market Status:** [OPEN 🟢 / CLOSED 🔴] — [exchange] session
+- **Market Cap:** [mktcap] | **P/E:** [PE] | **Div Yield:** [DY]%
+- **Analyst Target:** [tgt] ([upside/downside]%)
 
 **Key Signals**
-- **Trend Direction:** [bullish/bearish/neutral based on change% and momentum]
-- **Momentum:** [short-term reading based on change%, beta]
-- **Valuation vs Peers:** [compare PE to sector average, comment on premium/discount]
-- **Revenue Growth:** [from data]% YoY
+- **Trend:** [bullish/bearish/neutral]
+- **Valuation:** [vs sector peers]
+- **ROE:** [ROE]% — [comment]
 
-**Next Steps** *(for educational purposes only)*
-- **Entry Zone:** [suggest entry based on current price]
-- **Price Target:** [analyst target from data]
-- **Hold/Avoid Reasoning:** [concise reasoning]
+**Next Steps** *(educational only)*
+- **Entry Zone / Target / Reasoning:** [concise]
 
-_Risk disclaimer: This analysis is for educational purposes only. Always consult a licensed financial advisor before investing._
+_Risk disclaimer: Educational only. Consult a licensed advisor before investing._
 
-For non-analysis questions, be concise and data-driven. Always cite exact numbers from the live data above.`;
+For other questions be concise and cite exact numbers from the data above.`;
 };
 
 export const AIChat: React.FC<Props> = ({ stocks }) => {
@@ -174,7 +164,7 @@ export const AIChat: React.FC<Props> = ({ stocks }) => {
             </div>
             <div className="min-w-0">
               <p className="text-xs font-semibold text-slate-200">StockSense AI</p>
-              <p className="text-[9px] text-slate-500">Llama 3.1 8B · Groq</p>
+              <p className="text-[9px] text-slate-500">Gemma 2 9B · Groq</p>
             </div>
           </div>
         )}
