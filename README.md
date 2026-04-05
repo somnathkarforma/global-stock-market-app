@@ -14,6 +14,7 @@ A Bloomberg-terminal-inspired global stock market analytics SPA built with React
 > Open the Vercel URL above to see the full application.
 
 **Key views:**
+- 🏦 Enterprise header — live market pulse (gainers/losers/avg change), PRO brand banner with gradient grid
 - 📊 Stock cards grid with live sparklines and price flash animations
 - 📈 Stock detail modal — Recharts area chart with 6 time periods + fundamentals + news
 - 🌍 Market overview — global indices, sector heatmap, gainers/losers, exchange status
@@ -25,6 +26,7 @@ A Bloomberg-terminal-inspired global stock market analytics SPA built with React
 
 | Feature | Description |
 |---------|-------------|
+| **Enterprise Header** | Professional branding banner with live Gainers / Losers / Avg-Change pulse, gradient grid overlay, PRO badge, tagline |
 | **Live Prices** | All 37 stocks update every 5 seconds via a ±random walk simulation |
 | **Ticker Bar** | Scrolling marquee of 28 tickers with green/red flash on price change |
 | **Exchange Filter** | Toggle any of 10 exchanges (NYSE, NASDAQ, LSE, TSE, HKEX, SSE, Euronext, NSE, BSE, ASX) |

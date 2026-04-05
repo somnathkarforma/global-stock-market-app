@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { BarChart2, Globe, RefreshCw } from 'lucide-react';
+import { BarChart2, Globe, RefreshCw, TrendingUp, TrendingDown, Activity } from 'lucide-react';
 import { STOCKS, TICKER_BAR_SYMBOLS, Stock } from './data/mockData';
 import { useLivePrices } from './hooks/useLivePrices';
 import { useWatchlist } from './hooks/useWatchlist';
@@ -59,60 +59,103 @@ export default function App() {
     setSelectedStock(stock);
   };
 
+  // Market summary stats for header banner
+  const marketStats = useMemo(() => {
+    const gainers = liveStocks.filter(s => s.changePercent > 0).length;
+    const losers = liveStocks.filter(s => s.changePercent < 0).length;
+    const avgChange = liveStocks.reduce((acc, s) => acc + s.changePercent, 0) / liveStocks.length;
+    return { gainers, losers, avgChange };
+  }, [liveStocks]);
+
   return (
     <div className="flex flex-col h-screen bg-navy-950 overflow-hidden">
       {/* Fixed top navbar */}
       <header className="flex-shrink-0 bg-navy-900 border-b border-navy-700/50 z-20">
-        <div className="flex items-center justify-between px-4 py-2.5">
-          {/* Logo */}
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-accent-cyan/10 border border-accent-cyan/20 flex items-center justify-center">
-              <BarChart2 className="w-4 h-4 text-accent-cyan" />
-            </div>
-            <div>
-              <span className="font-mono text-base font-bold text-white tracking-tight">Stock</span>
-              <span className="font-mono text-base font-bold text-accent-cyan tracking-tight">Sense</span>
-              <span className="ml-2 text-[9px] font-semibold text-slate-600 bg-navy-800 border border-navy-700/40 rounded px-1.5 py-0.5 uppercase tracking-wider">Terminal</span>
-            </div>
-          </div>
 
-          {/* Main nav */}
-          <nav className="flex items-center gap-1">
-            <button
-              onClick={() => setMainView('stocks')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                mainView === 'stocks'
-                  ? 'bg-accent-cyan/10 text-accent-cyan border border-accent-cyan/20'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-navy-800'
-              }`}
-            >
-              <BarChart2 className="w-3.5 h-3.5" />
-              Stocks
-            </button>
-            <button
-              onClick={() => setMainView('overview')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                mainView === 'overview'
-                  ? 'bg-accent-cyan/10 text-accent-cyan border border-accent-cyan/20'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-navy-800'
-              }`}
-            >
-              <Globe className="w-3.5 h-3.5" />
-              Market Overview
-            </button>
-          </nav>
+        {/* ── Enterprise Hero Banner ───────────────────────────────────────── */}
+        <div className="relative overflow-hidden bg-gradient-to-r from-navy-950 via-navy-900 to-navy-950 border-b border-navy-700/30">
+          {/* Subtle grid overlay */}
+          <div className="absolute inset-0 opacity-[0.035]"
+            style={{ backgroundImage: 'linear-gradient(#00d4ff 1px, transparent 1px), linear-gradient(90deg, #00d4ff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+          {/* Glow accents */}
+          <div className="absolute left-1/4 top-0 w-64 h-8 bg-accent-cyan/5 blur-2xl rounded-full" />
+          <div className="absolute right-1/4 top-0 w-48 h-8 bg-accent-green/5 blur-2xl rounded-full" />
 
-          {/* Live indicator */}
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5 bg-navy-800/60 border border-navy-700/40 rounded-lg px-2.5 py-1">
-              <RefreshCw className="w-3 h-3 text-accent-green animate-spin" style={{ animationDuration: '3s' }} />
-              <span className="text-[10px] font-mono font-semibold text-accent-green">LIVE</span>
+          <div className="relative flex items-center justify-between px-4 py-3">
+            {/* Left — branding */}
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-accent-cyan/10 border border-accent-cyan/20 flex items-center justify-center shadow-lg shadow-accent-cyan/5">
+                <BarChart2 className="w-5 h-5 text-accent-cyan" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-xl font-bold text-white tracking-tight leading-none">Stock</span>
+                  <span className="font-mono text-xl font-bold text-accent-cyan tracking-tight leading-none">Sense</span>
+                  <span className="text-[9px] font-bold text-navy-900 bg-accent-cyan rounded px-1.5 py-0.5 uppercase tracking-wider leading-none">PRO</span>
+                </div>
+                <p className="text-[10px] text-slate-500 mt-0.5 font-sans tracking-wide">
+                  Global Markets Intelligence Terminal &nbsp;·&nbsp; Real-Time Analytics &nbsp;·&nbsp; AI-Powered Insights
+                </p>
+              </div>
             </div>
-            <div className="text-[10px] text-slate-600 font-mono hidden sm:block">
-              {new Date().toUTCString().slice(17, 25)} UTC
+
+            {/* Center — live market pulse */}
+            <div className="hidden md:flex items-center gap-4">
+              <div className="flex items-center gap-1.5 bg-navy-800/60 border border-navy-700/40 rounded-lg px-3 py-1.5">
+                <TrendingUp className="w-3.5 h-3.5 text-accent-green" />
+                <span className="text-[10px] font-mono text-accent-green font-semibold">{marketStats.gainers} Gainers</span>
+              </div>
+              <div className="flex items-center gap-1.5 bg-navy-800/60 border border-navy-700/40 rounded-lg px-3 py-1.5">
+                <TrendingDown className="w-3.5 h-3.5 text-accent-red" />
+                <span className="text-[10px] font-mono text-accent-red font-semibold">{marketStats.losers} Losers</span>
+              </div>
+              <div className="flex items-center gap-1.5 bg-navy-800/60 border border-navy-700/40 rounded-lg px-3 py-1.5">
+                <Activity className="w-3.5 h-3.5 text-accent-amber" />
+                <span className={`text-[10px] font-mono font-semibold ${marketStats.avgChange >= 0 ? 'text-accent-green' : 'text-accent-red'}`}>
+                  Avg {marketStats.avgChange >= 0 ? '+' : ''}{marketStats.avgChange.toFixed(2)}%
+                </span>
+              </div>
+            </div>
+
+            {/* Right — nav + live clock */}
+            <div className="flex items-center gap-3">
+              <nav className="flex items-center gap-1">
+                <button
+                  onClick={() => setMainView('stocks')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    mainView === 'stocks'
+                      ? 'bg-accent-cyan/10 text-accent-cyan border border-accent-cyan/20'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-navy-800'
+                  }`}
+                >
+                  <BarChart2 className="w-3.5 h-3.5" />
+                  Stocks
+                </button>
+                <button
+                  onClick={() => setMainView('overview')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    mainView === 'overview'
+                      ? 'bg-accent-cyan/10 text-accent-cyan border border-accent-cyan/20'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-navy-800'
+                  }`}
+                >
+                  <Globe className="w-3.5 h-3.5" />
+                  Market Overview
+                </button>
+              </nav>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 bg-navy-800/60 border border-navy-700/40 rounded-lg px-2.5 py-1">
+                  <RefreshCw className="w-3 h-3 text-accent-green animate-spin" style={{ animationDuration: '3s' }} />
+                  <span className="text-[10px] font-mono font-semibold text-accent-green">LIVE</span>
+                </div>
+                <div className="text-[10px] text-slate-600 font-mono hidden sm:block">
+                  {new Date().toUTCString().slice(17, 25)} UTC
+                </div>
+              </div>
             </div>
           </div>
         </div>
+
         {/* Ticker bar */}
         <TickerBar stocks={tickerStocks} lastUpdated={lastUpdated} />
       </header>

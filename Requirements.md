@@ -12,6 +12,20 @@ StockSense is a Bloomberg-terminal-inspired stock market analytics Single Page A
 - Each ticker shows: symbol, current price, percentage change
 - Price flashes green on uptick, red on downtick
 
+### FR-01b — Enterprise Header Banner
+- Full-width banner at the very top of every page
+- Displays **StockSense PRO** wordmark with tagline: *Global Markets Intelligence Terminal · Real-Time Analytics · AI-Powered Insights*
+- Live market pulse strip (hidden on small screens): Gainers count, Losers count, Average % change across all stocks — all update in real time
+- Gradient background (`navy-950 → navy-900 → navy-950`) with subtle cyan grid overlay and soft glow accents
+- Navigation tabs (Stocks / Market Overview) and LIVE UTC clock integrated into the same banner row
+
+### FR-01b — Enterprise Header Banner
+- Full-width banner at the top of every page above the ticker bar
+- Displays product name (**StockSense PRO**) with tagline: *Global Markets Intelligence Terminal · Real-Time Analytics · AI-Powered Insights*
+- Live market pulse strip: Gainers count (green), Losers count (red), Average change % across all stocks
+- Gradient background with subtle cyan grid overlay and glow accents
+- Navigation (Stocks / Market Overview) and LIVE clock integrated into the same banner row
+
 ### FR-02 — Stock Cards Grid
 - Display all stocks as cards in a responsive grid (1–4 columns depending on viewport)
 - Each card shows: symbol, exchange badge, company name, live price, change %, inline sparkline
