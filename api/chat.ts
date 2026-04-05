@@ -1,76 +1,69 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
+// Edge runtime — no 10s timeout on Vercel hobby plan
+export const config = { runtime: 'edge' };
 
-const ALLOWED_ORIGINS = [
+const ALLOWED_ORIGINS = new Set([
   'https://somnathkarforma.github.io',
   'http://localhost:5173',
   'http://localhost:4173',
-];
+]);
 
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-async function callGroq(apiKey: string, body: string, attempt = 0): Promise<Response> {
-  const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
-    body,
-  });
-  // One quick retry on 429, no sleep (must finish within Vercel 10s hobby limit)
-  if (response.status === 429 && attempt < 1) {
-    return callGroq(apiKey, body, attempt + 1);
-  }
-  return response;
+function corsHeaders(origin: string): HeadersInit {
+  const allowed = ALLOWED_ORIGINS.has(origin) ? origin : '';
+  return {
+    'Access-Control-Allow-Origin': allowed,
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Content-Type': 'application/json',
+  };
 }
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const origin = req.headers.origin ?? '';
-  if (ALLOWED_ORIGINS.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  }
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+export default async function handler(req: Request): Promise<Response> {
+  const origin = req.headers.get('origin') ?? '';
+  const headers = corsHeaders(origin);
 
-  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return res.status(204).end();
+    return new Response(null, { status: 204, headers });
   }
 
-  // Only allow POST
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers });
   }
 
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) {
-    return res.status(500).json({ error: 'GROQ_API_KEY not configured on server' });
+    return new Response(JSON.stringify({ error: 'GROQ_API_KEY not configured' }), { status: 500, headers });
+  }
+
+  let messages: Array<{ role: string; content: string }>;
+  try {
+    const body = await req.json() as { messages?: unknown };
+    if (!Array.isArray(body.messages)) {
+      return new Response(JSON.stringify({ error: 'Invalid request body' }), { status: 400, headers });
+    }
+    messages = body.messages as Array<{ role: string; content: string }>;
+  } catch {
+    return new Response(JSON.stringify({ error: 'Invalid JSON' }), { status: 400, headers });
   }
 
   try {
-    const { messages } = req.body as {
-      messages: Array<{ role: string; content: string }>;
-    };
-
-    if (!Array.isArray(messages)) {
-      return res.status(400).json({ error: 'Invalid request body' });
-    }
-
-    const response = await callGroq(
-      apiKey,
-      JSON.stringify({
+    const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+      body: JSON.stringify({
         model: 'llama-3.1-8b-instant',
         max_tokens: 400,
         messages,
       }),
-    );
+    });
 
-    const data = await response.json();
+    const data = await groqRes.json();
 
-    if (!response.ok) {
-      return res.status(response.status).json(data);
-    }
-
-    return res.status(200).json(data);
+    return new Response(JSON.stringify(data), {
+      status: groqRes.status,
+      headers,
+    });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';
-    return res.status(500).json({ error: message });
+    return new Response(JSON.stringify({ error: message }), { status: 500, headers });
   }
 }
