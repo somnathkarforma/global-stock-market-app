@@ -39,8 +39,14 @@ StockSense is a Bloomberg-terminal-inspired stock market analytics Single Page A
 ### FR-06 — Stock Search (Local + Live Yahoo Finance)
 - **Instant local matches** appear as the user types, from the 150+ mock stock catalog
 - **Live Yahoo Finance search** (350ms debounce) returns matching equities from all 10 supported exchanges for stocks not in the local catalog
-- Live results shown under a "Live from exchanges" section header
-- Selecting a live result fetches a full real-time quote via `api/stock-quote` and opens the detail modal
+- Exchange inference uses symbol suffixes (`.NS` → NSE, `.BO` → BSE, `.L` → LSE, `.HK` → HKEX, `.T` → TSE) and `exchDisp` display name fallbacks — any valid global equity is returned regardless of exchange code mapping gaps
+- CORS headers set to `*` on both `api/stock-search` and `api/stock-quote` (public read-only endpoints)
+- Live results shown under a "Live from exchanges" section header with a loading spinner while the debounced request is in flight
+- **Inline error hint** shown in the dropdown when live exchange search fails ("Live exchange search is temporarily unavailable. Showing local matches only.")
+- Selecting a live result opens the detail modal **immediately** with a basic profile (symbol, name, exchange, currency), then hydrates it with full quote data once the API responds
+- If `api/stock-quote` returns non-OK (including Yahoo upstream 401), the chart endpoint (`/v8/finance/chart/{symbol}`) is used as a fallback to obtain price, previous close, and volume
+- A secondary inline warning is shown below the dropdown if the quote fetch for a selected result fails ("Live quote unavailable for SYMBOL. Showing basic profile.")
+- Symbol de-duplication normalises symbols by stripping exchange suffixes (e.g. `TATAPOWER.NS` → `TATAPOWER`) before comparing with the local catalog
 - Empty state shows "No results — try asking StockSense AI" prompt
 
 ### FR-07 — Stock Detail Modal
@@ -61,7 +67,8 @@ StockSense is a Bloomberg-terminal-inspired stock market analytics Single Page A
 - Conversation history trimmed to last 6 messages to keep tokens low
 - Total per-request cost: ~400–700 tokens (well within 12,000 TPM free limit)
 - 15s client-side `AbortController` timeout with a descriptive error message
-- Auto stock mention detection popup with live price and Open/Closed badge as user types
+- **Stock autocomplete dropdown** above the textarea: as the user types, the last word triggers instant local matches and a debounced (350ms) live Yahoo Finance search; results are shown in a scrollable dropdown split into "Local" and "Live from exchanges" sections; selecting a result replaces that word in the message with the stock symbol and restores cursor position
+- Auto stock mention detection popup with live price and Open/Closed badge as user types (existing single-match chip)
 - Clicking popup or typing a bare symbol triggers a full deep-dive analysis request
 - Suggested prompt chips shown on first load
 - Markdown rendering: bold cyan headers, bullet lists, italic disclaimers
@@ -81,7 +88,7 @@ StockSense is a Bloomberg-terminal-inspired stock market analytics Single Page A
 
 ### NFR-02 — Security
 - `GROQ_API_KEY` stored as Vercel environment variable — never committed to git
-- All API proxies validate `Origin` header against a CORS allowlist
+- `api/stock-search` and `api/stock-quote` are public read-only GET endpoints; they use `Access-Control-Allow-Origin: *` (no session data or mutation)
 - No third-party analytics or tracking scripts
 
 ### NFR-03 — Responsiveness
@@ -129,10 +136,10 @@ StockSense is a Bloomberg-terminal-inspired stock market analytics Single Page A
 | Endpoint | Purpose | Runtime |
 |----------|---------|---------|
 | `api/chat.ts` | Groq AI proxy | **Edge** (no timeout) |
-| `api/stock-search.ts` | Yahoo Finance symbol search; filtered to 10 exchanges | Serverless (15s max) |
-| `api/stock-quote.ts` | Yahoo Finance full quote (price, P/E, beta, dividends, etc.) | Serverless (15s max) |
+| `api/stock-search.ts` | Yahoo Finance symbol search; exchange inference via code map + display name + symbol suffix fallbacks | Serverless (15s max) |
+| `api/stock-quote.ts` | Yahoo Finance full quote with `/v8/finance/chart` fallback when quote endpoint returns 401 | Serverless (15s max) |
 
-Yahoo Finance exchange code → app exchange mapping handled in each proxy. Only EQUITY and ETF types returned.
+Yahoo Finance exchange code → app exchange mapping handled in each proxy. Only EQUITY and ETF types returned. All supported global symbols (including NSE/BSE suffix variants like `.NS`, `.BO`) are returned without hard-filtering by exchange set.
 
 ### TR-04 — Typography
 - **JetBrains Mono** — all prices, tickers, percentages (Google Fonts)

@@ -14,7 +14,8 @@ A Bloomberg-terminal-inspired global stock market analytics SPA built with React
 | **Enterprise Header** | Professional branding banner with live Gainers / Losers / Avg-Change pulse, gradient grid overlay, PRO badge |
 | **Live Prices** | 150+ stocks update every 5 seconds via ±random walk simulation with price flash animations |
 | **Ticker Bar** | Scrolling marquee (240s, half-speed) — symbol · exchange badge · company name · price · ▲/▼ % change |
-| **Live Stock Search** | Instant local matches + debounced Yahoo Finance live search covering all 10 exchanges — any listed equity worldwide |
+| **Live Stock Search** | Instant local matches + debounced Yahoo Finance live search covering all 10 exchanges — any listed equity worldwide. Inline error hint when live search fails. Optimistic immediate modal open on selection with chart-API fallback when primary quote API is unavailable |
+| **AI Chat Autocomplete** | As you type in the AI chat box, a dropdown above the textarea shows instant local stock matches and live Yahoo Finance results. Selecting a suggestion inserts the symbol into your message at cursor position |
 | **Exchange Filter** | Toggle any of 10 exchanges with live Open/Closed status indicators (green pulsing dot / grey) |
 | **Watchlist** | Star stocks; persisted to `localStorage` |
 | **Detail Modal** | Area chart (1D/1W/1M/3M/1Y/5Y), 12 fundamental metrics, news with sentiment |
@@ -132,7 +133,17 @@ Vercel hobby plan serverless functions are hard-capped at **10 seconds**. The Ed
 Search finds any stock on all 10 exchanges:
 - **Local results** appear instantly from the 150+ mock stock catalog
 - **Live results** stream in from Yahoo Finance after 350ms for any stock not in the local catalog
-- Clicking a live result fetches a full real-time quote and opens the detail modal
+- Exchange codes, display names, and symbol suffixes (`.NS`, `.BO`, `.L`, `.HK`, `.T`) are all used for exchange inference so no valid symbol is silently discarded
+- Clicking a live result opens the detail modal **immediately** with a basic profile; full quote data hydrates it once the API responds
+- If Yahoo's quote endpoint is unavailable (e.g. upstream 401 for NSE/BSE symbols), the chart API is used as a fallback
+- Inline error hints are shown in the dropdown for both search failures and quote-fetch failures
+
+### AI Chat Autocomplete
+The AI chat input now has a stock autocomplete dropdown:
+- Type any part of a symbol or company name (e.g. `TATA`, `Apple`, `NFLX`)
+- A dropdown appears **above** the textarea with instant local matches and live Yahoo Finance results
+- Select any suggestion to insert the symbol at your cursor — the rest of your message is preserved
+- Works for any globally listed equity, not just the built-in mock catalog
 
 ---
 
