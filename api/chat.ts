@@ -14,11 +14,9 @@ async function callGroq(apiKey: string, body: string, attempt = 0): Promise<Resp
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
     body,
   });
-  // Retry on 429 with exponential backoff (max 3 attempts)
-  if (response.status === 429 && attempt < 3) {
-    const retryAfter = Number(response.headers.get('retry-after') ?? 0);
-    const delay = retryAfter > 0 ? retryAfter * 1000 : Math.min(1000 * 2 ** attempt, 16000);
-    await sleep(delay);
+  // Retry once on 429, max 3s delay to stay within Vercel execution budget
+  if (response.status === 429 && attempt < 1) {
+    await sleep(3000);
     return callGroq(apiKey, body, attempt + 1);
   }
   return response;

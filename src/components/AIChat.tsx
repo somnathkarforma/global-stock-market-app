@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Send, Bot, ChevronDown, Sparkles, TrendingUp } from 'lucide-react';
-import { Stock, EXCHANGES, isExchangeOpen } from '../data/mockData';
+import { Stock, isExchangeOpen } from '../data/mockData';
 import { fmt, fmtPct, fmtMktCap } from '../utils/market';
 
 interface Message {
@@ -24,50 +24,31 @@ const SUGGESTIONS = [
   'What is the market sentiment today?',
 ];
 
-const buildSystemPrompt = (stocks: Stock[]): string => {
-  // Per-exchange open/closed status (compact)
-  const exchangeStatus = EXCHANGES.map(ex => {
-    const open = isExchangeOpen(ex.name as Parameters<typeof isExchangeOpen>[0]);
-    return `${ex.name}:${open ? 'OPEN' : 'CLOSED'}`;
-  }).join(' | ');
-
-  // Limit to top 40 stocks by market cap to stay well within TPM limits
-  const topStocks = [...stocks]
-    .sort((a, b) => b.fundamentals.marketCap - a.fundamentals.marketCap)
-    .slice(0, 40);
-
-  // Compact per-stock line
-  const stockLines = topStocks.map(s => {
-    const open = isExchangeOpen(s.exchange);
-    const f = s.fundamentals;
-    return `${s.symbol}|${s.exchange}${open ? '' : '[C]'}|${fmt(s.price, s.currency)}|${s.changePercent > 0 ? '+' : ''}${s.changePercent.toFixed(2)}%|PE:${f.peRatio}|EPS:${f.eps}|DY:${f.dividendYield}%|beta:${f.beta}|ROE:${f.roe}%|tgt:${fmt(f.analystTarget, s.currency)}|mktcap:${fmtMktCap(f.marketCap, s.currency)}|${s.sector}`;
-  }).join('\n');
-
-  return `You are StockSense AI, a Bloomberg-style market intelligence assistant. Be concise.
-Exchange status: ${exchangeStatus}
-Top ${topStocks.length} stocks by market cap (pipe-delimited): SYMBOL|EXCHANGE[C=closed]|PRICE|CHANGE|PE|EPS|DivYield|Beta|ROE|AnalystTarget|MarketCap|Sector
-${stockLines}
-
-For stock analysis respond with this structure:
-**[Name] ([SYMBOL]) Analysis**
-- **Live Price:** [price] ([change] today)
-- **Market Status:** [OPEN 🟢 / CLOSED 🔴] — [exchange] session
-- **Market Cap:** [mktcap] | **P/E:** [PE] | **Div Yield:** [DY]%
+// Minimal static system prompt — no bulk stock data to keep tokens low
+const SYSTEM_PROMPT = `You are StockSense AI, a Bloomberg-style market intelligence assistant covering NYSE, NASDAQ, LSE, TSE, SSE, HKEX, Euronext, NSE, BSE, and ASX.
+Be concise. For stock analysis use this structure:
+**[Name] ([SYMBOL]) — [Exchange]**
+- **Price:** [price] ([change]% today) | **Market Cap:** [cap] | **P/E:** [pe]
+- **Div Yield:** [dy]% | **Beta:** [beta] | **ROE:** [roe]%
 - **Analyst Target:** [tgt] ([upside/downside]%)
+**Signals:** [Trend: bullish/bearish/neutral] | [Valuation vs peers] | [Key risk]
+**Outlook:** [2-3 sentence actionable view]
+_Educational only. Consult a licensed advisor before investing._
+If live data is provided in the user message, use it. Otherwise use your training knowledge and state "⚠️ No live data — general knowledge only."`;
 
-**Key Signals**
-- **Trend:** [bullish/bearish/neutral]
-- **Valuation:** [vs sector peers]
-- **ROE:** [ROE]% — [comment]
+// Build a compact snippet for a single stock to inject inline
+const buildStockContext = (s: Stock): string => {
+  const open = isExchangeOpen(s.exchange);
+  const f = s.fundamentals;
+  return `[LIVE DATA] ${s.symbol} (${s.name}) | ${s.exchange} ${open ? 'OPEN🟢' : 'CLOSED🔴'} | ${fmt(s.price, s.currency)} (${s.changePercent > 0 ? '+' : ''}${s.changePercent.toFixed(2)}%) | PE:${f.peRatio} EPS:${f.eps} DY:${f.dividendYield}% beta:${f.beta} ROE:${f.roe}% tgt:${fmt(f.analystTarget, s.currency)} mktcap:${fmtMktCap(f.marketCap, s.currency)} sector:${s.sector}`;
+};
 
-**Next Steps** *(educational only)*
-- **Entry Zone / Target / Reasoning:** [concise]
-
-_Risk disclaimer: Educational only. Consult a licensed advisor before investing._
-
-For other questions be concise and cite exact numbers from the data above.
-
-If asked about a stock NOT in the catalog above, use your broader financial knowledge to answer. Clearly state: "⚠️ No live data — using general knowledge." Then provide what you know about the company, sector, typical fundamentals, and analyst sentiment. Never refuse to answer about a stock just because it is not in the catalog.`;
+// Find stocks mentioned in a message text (up to 3)
+const findMentionedStocks = (text: string, stocks: Stock[]): Stock[] => {
+  const q = text.toLowerCase();
+  return stocks.filter(s =>
+    q.includes(s.symbol.toLowerCase()) || q.includes(s.name.toLowerCase().split(' ').slice(0, 2).join(' '))
+  ).slice(0, 3);
 };
 
 export const AIChat: React.FC<Props> = ({ stocks }) => {
@@ -109,15 +90,24 @@ export const AIChat: React.FC<Props> = ({ stocks }) => {
     setMentionedStock(null);
     setLoading(true);
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 28000); // 28s hard timeout
+    const timeout = setTimeout(() => controller.abort(), 25000); // 25s hard timeout
     try {
-      const history = [...messages, userMsg].filter(m => m.id !== 'welcome').slice(-8); // keep last 8 for context
+      const history = [...messages, userMsg].filter(m => m.id !== 'welcome').slice(-6); // keep last 6 for context
+      // Inject live stock data for any stocks mentioned in the final user message
+      const mentioned = findMentionedStocks(finalText, stocks);
+      const enrichedMessages = history.map((m, idx) => {
+        if (idx === history.length - 1 && m.role === 'user' && mentioned.length > 0) {
+          const context = mentioned.map(buildStockContext).join('\n');
+          return { role: m.role, content: `${context}\n\n${m.content}` };
+        }
+        return { role: m.role, content: m.content };
+      });
       const response = await fetch(PROXY_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         signal: controller.signal,
         body: JSON.stringify({
-          messages: [{ role: 'system', content: buildSystemPrompt(stocks) }, ...history.map(m => ({ role: m.role, content: m.content }))],
+          messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...enrichedMessages],
         }),
       });
       if (!response.ok) {
