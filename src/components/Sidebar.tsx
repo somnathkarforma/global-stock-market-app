@@ -46,6 +46,7 @@ export const Sidebar: React.FC<Props> = ({
   const [liveResults, setLiveResults] = useState<LiveResult[]>([]);
   const [liveLoading, setLiveLoading] = useState(false);
   const [liveError, setLiveError] = useState<string | null>(null);
+  const [liveSelectError, setLiveSelectError] = useState<string | null>(null);
   const [selectingSymbol, setSelectingSymbol] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -69,6 +70,7 @@ export const Sidebar: React.FC<Props> = ({
     debounceRef.current = setTimeout(async () => {
       setLiveLoading(true);
       setLiveError(null);
+      setLiveSelectError(null);
       try {
         const res = await fetch(`${SEARCH_API}?q=${encodeURIComponent(query.trim())}`);
         if (!res.ok) {
@@ -93,15 +95,24 @@ export const Sidebar: React.FC<Props> = ({
   // Fetch full quote and call onSelectStock for a live (non-mock) result
   const selectLiveStock = async (result: LiveResult) => {
     setSelectingSymbol(result.symbol);
+    setLiveSelectError(null);
     try {
       const res = await fetch(`${QUOTE_API}?symbol=${encodeURIComponent(result.symbol)}`);
-      if (res.ok) {
-        const data = await res.json() as { quote: Stock };
-        onSelectStock(data.quote);
+      if (!res.ok) {
+        setLiveSelectError(`Could not load quote for ${result.symbol}. Please try again.`);
+        return;
       }
-    } catch { /* ignore */ } finally {
-      setSelectingSymbol(null);
+      const data = await res.json() as { quote?: Stock };
+      if (!data.quote) {
+        setLiveSelectError(`Could not load quote for ${result.symbol}. Please try again.`);
+        return;
+      }
+      onSelectStock(data.quote);
       setQuery('');
+    } catch {
+      setLiveSelectError(`Could not load quote for ${result.symbol}. Please try again.`);
+    } finally {
+      setSelectingSymbol(null);
     }
   };
 
@@ -191,6 +202,13 @@ export const Sidebar: React.FC<Props> = ({
               <div className="px-3 py-2 border-t border-navy-700/40 bg-accent-amber/5">
                 <p className="text-[10px] text-accent-amber">{liveError}</p>
                 <p className="text-[9px] text-slate-500 mt-0.5">Showing local matches only.</p>
+              </div>
+            )}
+
+            {/* Live quote selection error hint */}
+            {!liveLoading && liveSelectError && (
+              <div className="px-3 py-2 border-t border-navy-700/40 bg-accent-red/5">
+                <p className="text-[10px] text-accent-red">{liveSelectError}</p>
               </div>
             )}
 
