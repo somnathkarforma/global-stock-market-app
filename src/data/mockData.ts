@@ -338,6 +338,84 @@ const raw: RawStock[] = [
     fundamentals: { peRatio: 15.2, eps: 32.06, marketCap: 165, high52w: 570.08, low52w: 399.46, dividendYield: 2.11, beta: 1.35, roe: 12.8, analystTarget: 545.0, forwardPE: 12.5, revenueGrowth: 16.2, profitMargin: 22.0 },
     description: 'Goldman Sachs provides investment banking, securities, and asset management services globally.',
   },
+  {
+    symbol: 'SLF', name: 'Sun Life Financial Inc.', exchange: 'NYSE', currency: 'USD', sector: 'Finance',
+    price: 52.84, previousClose: 52.14, volume: 1_200_000, avgVolume: 1_480_000,
+    fundamentals: { peRatio: 13.4, eps: 3.94, marketCap: 32, high52w: 58.42, low52w: 42.80, dividendYield: 4.12, beta: 0.84, roe: 13.8, analystTarget: 61.0, forwardPE: 11.8, revenueGrowth: 8.4, profitMargin: 12.4 },
+    description: 'Sun Life Financial is a leading Canadian financial services company offering insurance, wealth and asset management solutions globally.',
+  },
+  {
+    symbol: 'MFC', name: 'Manulife Financial Corp.', exchange: 'NYSE', currency: 'USD', sector: 'Finance',
+    price: 24.38, previousClose: 24.04, volume: 2_400_000, avgVolume: 2_900_000,
+    fundamentals: { peRatio: 9.8, eps: 2.49, marketCap: 48, high52w: 27.84, low52w: 18.42, dividendYield: 4.14, beta: 0.92, roe: 12.8, analystTarget: 29.0, forwardPE: 8.8, revenueGrowth: 11.4, profitMargin: 14.8 },
+    description: 'Manulife is a Canadian multinational insurance company and financial services provider operating globally as John Hancock in the US.',
+  },
+  {
+    symbol: 'BAC', name: 'Bank of America', exchange: 'NYSE', currency: 'USD', sector: 'Finance',
+    price: 43.18, previousClose: 42.74, volume: 38_400_000, avgVolume: 44_200_000,
+    fundamentals: { peRatio: 13.8, eps: 3.13, marketCap: 342, high52w: 48.08, low52w: 34.22, dividendYield: 2.32, beta: 1.34, roe: 10.8, analystTarget: 50.0, forwardPE: 12.2, revenueGrowth: 5.4, profitMargin: 27.4 },
+    description: 'Bank of America is the second-largest US bank with 69 million consumer and business clients.',
+  },
+  {
+    symbol: 'WMT', name: 'Walmart Inc.', exchange: 'NYSE', currency: 'USD', sector: 'Consumer',
+    price: 94.84, previousClose: 93.96, volume: 12_400_000, avgVolume: 14_800_000,
+    fundamentals: { peRatio: 32.4, eps: 2.93, marketCap: 761, high52w: 105.30, low52w: 72.48, dividendYield: 0.98, beta: 0.52, roe: 22.4, analystTarget: 108.0, forwardPE: 28.4, revenueGrowth: 5.4, profitMargin: 2.8 },
+    description: 'Walmart is the world\'s largest retailer by revenue with 10,500+ stores in 19 countries.',
+  },
+  {
+    symbol: 'MA', name: 'Mastercard Inc.', exchange: 'NYSE', currency: 'USD', sector: 'Finance',
+    price: 492.84, previousClose: 488.42, volume: 3_200_000, avgVolume: 3_800_000,
+    fundamentals: { peRatio: 38.4, eps: 12.83, marketCap: 466, high52w: 548.62, low52w: 422.84, dividendYield: 0.48, beta: 1.08, roe: 168.4, analystTarget: 552.0, forwardPE: 32.4, revenueGrowth: 12.4, profitMargin: 46.4 },
+    description: 'Mastercard is a global payment technology company processing billions of transactions annually across 210+ countries.',
+  },
+  {
+    symbol: 'CVX', name: 'Chevron Corp.', exchange: 'NYSE', currency: 'USD', sector: 'Energy',
+    price: 152.84, previousClose: 151.24, volume: 8_400_000, avgVolume: 9_800_000,
+    fundamentals: { peRatio: 14.8, eps: 10.33, marketCap: 293, high52w: 172.48, low52w: 131.42, dividendYield: 4.24, beta: 0.84, roe: 12.4, analystTarget: 168.0, forwardPE: 13.2, revenueGrowth: -6.8, profitMargin: 10.4 },
+    description: 'Chevron is one of the world\'s largest integrated energy companies with operations in over 180 countries.',
+  },
+  {
+    symbol: 'PG', name: 'Procter & Gamble', exchange: 'NYSE', currency: 'USD', sector: 'Consumer',
+    price: 162.84, previousClose: 161.48, volume: 6_800_000, avgVolume: 7_900_000,
+    fundamentals: { peRatio: 26.4, eps: 6.17, marketCap: 383, high52w: 178.24, low52w: 148.48, dividendYield: 2.44, beta: 0.54, roe: 32.4, analystTarget: 178.0, forwardPE: 23.4, revenueGrowth: 3.2, profitMargin: 19.4 },
+    description: 'Procter & Gamble is a global consumer goods giant behind Tide, Gillette, Pampers, and 65 other household brands.',
+  },
+  {
+    symbol: 'KO', name: 'Coca-Cola Co.', exchange: 'NYSE', currency: 'USD', sector: 'Consumer',
+    price: 68.84, previousClose: 68.12, volume: 14_200_000, avgVolume: 16_400_000,
+    fundamentals: { peRatio: 24.4, eps: 2.82, marketCap: 296, high52w: 74.38, low52w: 60.42, dividendYield: 3.04, beta: 0.58, roe: 38.4, analystTarget: 76.0, forwardPE: 22.4, revenueGrowth: 3.4, profitMargin: 24.4 },
+    description: 'Coca-Cola is the world\'s largest beverage company, operating in over 200 countries with 500+ brands.',
+  },
+  {
+    symbol: 'DIS', name: 'Walt Disney Co.', exchange: 'NYSE', currency: 'USD', sector: 'Consumer',
+    price: 98.84, previousClose: 97.42, volume: 9_200_000, avgVolume: 11_400_000,
+    fundamentals: { peRatio: 32.4, eps: 3.05, marketCap: 180, high52w: 122.82, low52w: 83.92, dividendYield: 0.88, beta: 1.12, roe: 7.4, analystTarget: 118.0, forwardPE: 24.4, revenueGrowth: 4.8, profitMargin: 4.8 },
+    description: 'Walt Disney is a global entertainment conglomerate owning Disney+, ESPN, Marvel, Pixar, and theme parks worldwide.',
+  },
+  {
+    symbol: 'IBM', name: 'IBM Corp.', exchange: 'NYSE', currency: 'USD', sector: 'Technology',
+    price: 228.84, previousClose: 226.48, volume: 4_200_000, avgVolume: 4_900_000,
+    fundamentals: { peRatio: 24.4, eps: 9.38, marketCap: 211, high52w: 264.84, low52w: 182.42, dividendYield: 2.84, beta: 0.68, roe: 22.4, analystTarget: 248.0, forwardPE: 20.4, revenueGrowth: 1.4, profitMargin: 13.4 },
+    description: 'IBM is a global technology and consulting company focused on hybrid cloud, AI, and enterprise software.',
+  },
+  {
+    symbol: 'PFE', name: 'Pfizer Inc.', exchange: 'NYSE', currency: 'USD', sector: 'Healthcare',
+    price: 24.84, previousClose: 24.42, volume: 36_400_000, avgVolume: 42_200_000,
+    fundamentals: { peRatio: 14.8, eps: 1.68, marketCap: 140, high52w: 32.88, low52w: 21.42, dividendYield: 6.68, beta: 0.58, roe: 8.4, analystTarget: 30.0, forwardPE: 12.8, revenueGrowth: -41.4, profitMargin: 9.8 },
+    description: 'Pfizer is a global pharmaceutical leader known for COVID-19 vaccines and a broad pipeline of medicines.',
+  },
+  {
+    symbol: 'RTX', name: 'RTX Corp. (Raytheon)', exchange: 'NYSE', currency: 'USD', sector: 'Industrial',
+    price: 128.84, previousClose: 127.42, volume: 7_200_000, avgVolume: 8_400_000,
+    fundamentals: { peRatio: 38.4, eps: 3.36, marketCap: 172, high52w: 138.42, low52w: 92.42, dividendYield: 2.14, beta: 0.84, roe: 9.4, analystTarget: 142.0, forwardPE: 24.4, revenueGrowth: 8.4, profitMargin: 7.8 },
+    description: 'RTX is a leading aerospace and defense company, formed by the merger of Raytheon and United Technologies.',
+  },
+  {
+    symbol: 'CAT', name: 'Caterpillar Inc.', exchange: 'NYSE', currency: 'USD', sector: 'Industrial',
+    price: 348.84, previousClose: 344.42, volume: 2_400_000, avgVolume: 2_900_000,
+    fundamentals: { peRatio: 16.4, eps: 21.28, marketCap: 173, high52w: 418.50, low52w: 292.44, dividendYield: 1.48, beta: 1.04, roe: 58.4, analystTarget: 390.0, forwardPE: 14.4, revenueGrowth: -3.4, profitMargin: 17.4 },
+    description: 'Caterpillar is the world\'s largest construction and mining equipment manufacturer.',
+  },
   // ── LSE ───────────────────────────────────────────────────────────────────
   {
     symbol: 'HSBA', name: 'HSBC Holdings', exchange: 'LSE', currency: 'GBP', sector: 'Finance',
@@ -769,7 +847,7 @@ export const STOCKS_BY_SYMBOL = new Map<string, Stock>(STOCKS.map(s => [s.symbol
 // ─── Ticker bar: 40 tickers across exchanges ──────────────────────────────────
 export const TICKER_BAR_SYMBOLS = [
   // US
-  'AAPL','MSFT','NVDA','GOOGL','META','AMZN','TSLA','BRK.B','JPM','V',
+  'AAPL','MSFT','NVDA','GOOGL','META','AMZN','TSLA','BRK.B','JPM','V','SLF','MFC','BAC','WMT','MA','CVX','PG','KO','DIS',
   // UK
   'HSBA','AZN','SHEL',
   // HK / China

@@ -62,9 +62,9 @@ export const Sidebar: React.FC<Props> = ({
           )}
         </div>
         {/* Search dropdown */}
-        {showSearch && searchResults.length > 0 && (
+        {showSearch && query.trim() && (
           <div className="absolute z-30 mt-1 w-56 bg-surface-2 border border-navy-700/60 rounded-lg shadow-xl overflow-hidden animate-slide-up">
-            {searchResults.map(s => (
+            {searchResults.length > 0 ? searchResults.map(s => (
               <button
                 key={s.symbol}
                 onMouseDown={() => { onSelectStock(s); setQuery(''); }}
@@ -76,7 +76,12 @@ export const Sidebar: React.FC<Props> = ({
                 </span>
                 <span className={`font-mono text-xs ${changeColor(s.changePercent)}`}>{fmtPct(s.changePercent)}</span>
               </button>
-            ))}
+            )) : (
+              <div className="px-3 py-3 text-center">
+                <p className="text-xs text-slate-400">No results for "<span className="text-accent-cyan">{query}</span>"</p>
+                <p className="text-[10px] text-slate-500 mt-1">Try asking <span className="text-accent-cyan font-semibold">StockSense AI →</span></p>
+              </div>
+            )}
           </div>
         )}
       </div>

@@ -65,7 +65,9 @@ For stock analysis respond with this structure:
 
 _Risk disclaimer: Educational only. Consult a licensed advisor before investing._
 
-For other questions be concise and cite exact numbers from the data above.`;
+For other questions be concise and cite exact numbers from the data above.
+
+If asked about a stock NOT in the catalog above, use your broader financial knowledge to answer. Clearly state: "⚠️ No live data — using general knowledge." Then provide what you know about the company, sector, typical fundamentals, and analyst sentiment. Never refuse to answer about a stock just because it is not in the catalog.`;
 };
 
 export const AIChat: React.FC<Props> = ({ stocks }) => {
