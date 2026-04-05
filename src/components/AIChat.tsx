@@ -7,6 +7,10 @@ const SEARCH_API = import.meta.env.DEV
   ? '/api/stock-search'
   : 'https://global-stock-market-app.vercel.app/api/stock-search';
 
+const QUOTE_API = import.meta.env.DEV
+  ? '/api/stock-quote'
+  : 'https://global-stock-market-app.vercel.app/api/stock-quote';
+
 interface LiveResult {
   symbol: string;
   name: string;
@@ -63,12 +67,38 @@ const buildStockContext = (s: Stock): string => {
   return `[LIVE DATA] ${s.symbol} (${s.name}) | ${s.exchange} ${open ? 'OPEN🟢' : 'CLOSED🔴'} | ${fmt(s.price, s.currency)} (${s.changePercent > 0 ? '+' : ''}${s.changePercent.toFixed(2)}%) | PE:${f.peRatio} EPS:${f.eps} DY:${f.dividendYield}% beta:${f.beta} ROE:${f.roe}% tgt:${fmt(f.analystTarget, s.currency)} mktcap:${fmtMktCap(f.marketCap, s.currency)} sector:${s.sector}`;
 };
 
-// Find stocks mentioned in a message text (up to 3)
+// Find stocks mentioned in a message text that exist in local catalog (up to 3)
 const findMentionedStocks = (text: string, stocks: Stock[]): Stock[] => {
   const q = text.toLowerCase();
   return stocks.filter(s =>
     q.includes(s.symbol.toLowerCase()) || q.includes(s.name.toLowerCase().split(' ').slice(0, 2).join(' '))
   ).slice(0, 3);
+};
+
+// Extract symbol-like tokens from text that are NOT in local catalog, then fetch live quotes
+const SYMBOL_RE = /\b([A-Z]{2,12}(?:\.(NS|BO|L|HK|T|AX|PA|AS))?)\b/g;
+const fetchLiveQuotes = async (text: string, localStocks: Stock[]): Promise<Stock[]> => {
+  const localSymbols = new Set(localStocks.map(s => normalizeSymbol(s.symbol)));
+  const upperText = text.toUpperCase();
+  const candidates = new Set<string>();
+  let m: RegExpExecArray | null;
+  SYMBOL_RE.lastIndex = 0;
+  while ((m = SYMBOL_RE.exec(upperText)) !== null) {
+    const sym = m[1];
+    if (!localSymbols.has(normalizeSymbol(sym))) candidates.add(sym);
+  }
+  if (candidates.size === 0) return [];
+  const results = await Promise.all(
+    [...candidates].slice(0, 3).map(async sym => {
+      try {
+        const res = await fetch(`${QUOTE_API}?symbol=${encodeURIComponent(sym)}`, { signal: AbortSignal.timeout(5000) });
+        if (!res.ok) return null;
+        const data = await res.json() as { quote?: Stock };
+        return data.quote ?? null;
+      } catch { return null; }
+    })
+  );
+  return results.filter((s): s is Stock => s !== null && s.price > 0);
 };
 
 export const AIChat: React.FC<Props> = ({ stocks }) => {
@@ -188,9 +218,12 @@ export const AIChat: React.FC<Props> = ({ stocks }) => {
       const history = [...messages, userMsg].filter(m => m.id !== 'welcome').slice(-6); // keep last 6 for context
       // Inject live stock data for any stocks mentioned in the final user message
       const mentioned = findMentionedStocks(finalText, stocks);
+      // Also fetch live quotes for any non-local symbols mentioned (e.g. TATAELXSI.NS)
+      const liveQuotes = await fetchLiveQuotes(finalText, stocks);
+      const allMentioned = [...mentioned, ...liveQuotes];
       const enrichedMessages = history.map((m, idx) => {
-        if (idx === history.length - 1 && m.role === 'user' && mentioned.length > 0) {
-          const context = mentioned.map(buildStockContext).join('\n');
+        if (idx === history.length - 1 && m.role === 'user' && allMentioned.length > 0) {
+          const context = allMentioned.map(buildStockContext).join('\n');
           return { role: m.role, content: `${context}\n\n${m.content}` };
         }
         return { role: m.role, content: m.content };
