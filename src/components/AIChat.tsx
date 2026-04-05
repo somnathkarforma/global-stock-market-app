@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Send, Bot, ChevronDown, Sparkles } from 'lucide-react';
+import { Send, Bot, ChevronDown, Sparkles, TrendingUp } from 'lucide-react';
 import { Stock } from '../data/mockData';
 import { fmt, fmtPct, fmtMktCap } from '../utils/market';
 
@@ -26,20 +26,39 @@ const SUGGESTIONS = [
 
 const buildSystemPrompt = (stocks: Stock[]): string => {
   const allStocks = stocks.map(s =>
-    `${s.symbol} (${s.name}, ${s.exchange}): price=${fmt(s.price, s.currency)}, change=${fmtPct(s.changePercent)}, PE=${s.fundamentals.peRatio}, marketCap=${fmtMktCap(s.fundamentals.marketCap, s.currency)}, sector=${s.sector}`
+    `${s.symbol} (${s.name}, ${s.exchange}): price=${fmt(s.price, s.currency)}, change=${fmtPct(s.changePercent)}, PE=${s.fundamentals.peRatio}, forwardPE=${s.fundamentals.forwardPE}, EPS=${s.fundamentals.eps}, dividendYield=${s.fundamentals.dividendYield}%, beta=${s.fundamentals.beta}, ROE=${s.fundamentals.roe}%, revenueGrowth=${s.fundamentals.revenueGrowth}%, profitMargin=${s.fundamentals.profitMargin}%, analystTarget=${fmt(s.fundamentals.analystTarget, s.currency)}, marketCap=${fmtMktCap(s.fundamentals.marketCap, s.currency)}, sector=${s.sector}`
   ).join('\n');
 
-  return `You are StockSense AI, a Bloomberg-style market intelligence assistant. You analyze stocks, market trends, and financial data. Be concise, data-driven, and professional—like a Wall Street analyst.
+  return `You are StockSense AI, a Bloomberg-style market intelligence assistant with access to live market data.
 
-Current live market data for ALL ${stocks.length} stocks:
+Live market data for ALL ${stocks.length} stocks:
 ${allStocks}
 
-Guidelines:
-- Always cite the exact live prices and data from above when asked about any stock
-- Format prices with currency symbols
-- Use bullet points for lists
-- Keep responses focused and under 200 words unless asked for detail
-- Never give actual financial advice; always note this is for educational purposes`;
+When asked to analyze a specific stock, ALWAYS use the exact live data above and respond with this structure:
+
+**[Company Name] ([SYMBOL]) Analysis**
+
+As of current market data, here is the live snapshot:
+- **Live Price:** [exact price from data] ([change%] today)
+- **Market Cap:** [from data]
+- **P/E Ratio:** [from data]
+- **Dividend Yield:** [from data]%
+- **Analyst Target:** [from data] ([upside/downside]% from current)
+
+**Key Signals**
+- **Trend Direction:** [bullish/bearish/neutral based on change% and momentum]
+- **Momentum:** [short-term reading based on change%, beta]
+- **Valuation vs Peers:** [compare PE to sector average, comment on premium/discount]
+- **Revenue Growth:** [from data]% YoY
+
+**Next Steps** *(for educational purposes only)*
+- **Entry Zone:** [suggest entry based on current price]
+- **Price Target:** [analyst target from data]
+- **Hold/Avoid Reasoning:** [concise reasoning]
+
+_Risk disclaimer: This analysis is for educational purposes only. Always consult a licensed financial advisor before investing._
+
+For non-analysis questions, be concise and data-driven. Always cite exact numbers from the live data above.`;
 };
 
 export const AIChat: React.FC<Props> = ({ stocks }) => {
@@ -68,9 +87,17 @@ export const AIChat: React.FC<Props> = ({ stocks }) => {
 
   const sendMessage = useCallback(async (text: string) => {
     if (!text.trim() || loading) return;
-    const userMsg: Message = { id: Date.now().toString(), role: 'user', content: text };
+    // If user types just a symbol/short name alone, promote to deep-dive analysis
+    const trimmed = text.trim();
+    const isSymbolOnly = /^[A-Z0-9.]+$/i.test(trimmed) && trimmed.length <= 10;
+    const matchedBySymbol = isSymbolOnly && stocks.find(s => s.symbol.toLowerCase() === trimmed.toLowerCase());
+    const finalText = matchedBySymbol
+      ? `Give me a full detailed analysis of ${matchedBySymbol.symbol} (${matchedBySymbol.name})`
+      : trimmed;
+    const userMsg: Message = { id: Date.now().toString(), role: 'user', content: finalText };
     setMessages(prev => [...prev, userMsg]);
     setInput('');
+    setMentionedStock(null);
     setLoading(true);
     try {
       const history = [...messages, userMsg].filter(m => m.id !== 'welcome');
@@ -97,15 +124,28 @@ export const AIChat: React.FC<Props> = ({ stocks }) => {
     }
   }, [messages, stocks, loading]);
 
+  const analyzeStock = useCallback((stock: Stock) => {
+    setInput('');
+    setMentionedStock(null);
+    sendMessage(`Give me a full detailed analysis of ${stock.symbol} (${stock.name})`);
+  }, [sendMessage]);
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(input); }
   };
 
   const renderContent = (text: string) => text.split('\n').map((line, i) => {
-    if (line.startsWith('**') && line.endsWith('**')) return <p key={i} className="font-semibold text-slate-100 mb-1">{line.slice(2, -2)}</p>;
-    if (line.startsWith('- ') || line.startsWith('• ')) {
-      const formatted = line.replace(/^[-•]\s/, '').replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-      return <li key={i} className="text-slate-300 ml-3 mb-0.5 text-xs" dangerouslySetInnerHTML={{ __html: formatted }} />;
+    // Section headers: **Title** on its own line
+    if (/^\*\*[^*]+\*\*$/.test(line.trim()) && !line.trim().startsWith('- ')) {
+      return <p key={i} className="font-bold text-accent-cyan text-xs mt-2 mb-1">{line.trim().slice(2, -2)}</p>;
+    }
+    // Italic disclaimer lines
+    if (line.trim().startsWith('_') && line.trim().endsWith('_')) {
+      return <p key={i} className="text-[10px] text-slate-500 italic mt-2 leading-relaxed">{line.trim().slice(1, -1)}</p>;
+    }
+    if (line.startsWith('- ') || line.startsWith('\u2022 ')) {
+      const formatted = line.replace(/^[-\u2022]\s/, '').replace(/\*\*(.+?)\*\*/g, '<strong class="text-slate-100">$1</strong>');
+      return <li key={i} className="text-slate-300 ml-3 mb-0.5 text-xs leading-relaxed" dangerouslySetInnerHTML={{ __html: formatted }} />;
     }
     if (!line.trim()) return <br key={i} />;
     const formatted = line.replace(/\*\*(.+?)\*\*/g, '<strong class="text-slate-100">$1</strong>');
@@ -164,19 +204,33 @@ export const AIChat: React.FC<Props> = ({ stocks }) => {
 
           <div className="p-3 border-t border-navy-700/40">
             {mentionedStock && (
-              <div className="mb-2 px-3 py-2 rounded-lg bg-navy-900/80 border border-accent-cyan/20 flex items-center justify-between gap-2">
-                <div className="min-w-0">
-                  <span className="text-[10px] font-mono font-bold text-accent-cyan">{mentionedStock.symbol}</span>
-                  <span className="text-[10px] text-slate-400 ml-1.5 truncate">{mentionedStock.name}</span>
-                  <span className="text-[9px] text-slate-600 ml-1">· {mentionedStock.exchange}</span>
-                </div>
-                <div className="flex-shrink-0 text-right">
-                  <p className={`text-xs font-mono font-semibold ${mentionedStock.changePercent >= 0 ? 'text-accent-green' : 'text-accent-red'}`}>
-                    {fmt(mentionedStock.price, mentionedStock.currency)}
-                  </p>
-                  <p className={`text-[9px] font-mono ${mentionedStock.changePercent >= 0 ? 'text-accent-green' : 'text-accent-red'}`}>
-                    {mentionedStock.changePercent >= 0 ? '+' : ''}{fmtPct(mentionedStock.changePercent)}
-                  </p>
+              <div
+                className="mb-2 px-3 py-2 rounded-lg bg-navy-900/80 border border-accent-cyan/20 cursor-pointer hover:border-accent-cyan/50 hover:bg-navy-800/80 transition-colors group"
+                onClick={() => analyzeStock(mentionedStock)}
+                title={`Click to analyze ${mentionedStock.symbol}`}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] font-mono font-bold text-accent-cyan">{mentionedStock.symbol}</span>
+                      <span className="text-[9px] text-slate-600">· {mentionedStock.exchange}</span>
+                    </div>
+                    <p className="text-[10px] text-slate-400 truncate">{mentionedStock.name}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-shrink-0 text-right">
+                      <p className={`text-xs font-mono font-semibold ${mentionedStock.changePercent >= 0 ? 'text-accent-green' : 'text-accent-red'}`}>
+                        {fmt(mentionedStock.price, mentionedStock.currency)}
+                      </p>
+                      <p className={`text-[9px] font-mono ${mentionedStock.changePercent >= 0 ? 'text-accent-green' : 'text-accent-red'}`}>
+                        {mentionedStock.changePercent >= 0 ? '+' : ''}{fmtPct(mentionedStock.changePercent)}
+                      </p>
+                    </div>
+                    <div className="flex-shrink-0 flex items-center gap-1 text-[9px] text-accent-cyan opacity-0 group-hover:opacity-100 transition-opacity">
+                      <TrendingUp className="w-3 h-3" />
+                      <span>Analyze</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
