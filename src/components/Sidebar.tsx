@@ -137,27 +137,24 @@ export const Sidebar: React.FC<Props> = ({
   const selectLiveStock = async (result: LiveResult) => {
     setSelectingSymbol(result.symbol);
     setLiveSelectError(null);
+    const fallbackStock = buildFallbackLiveStock(result);
+    // Open details immediately so selection never feels broken.
+    onSelectStock(fallbackStock);
+    setQuery('');
     try {
       const res = await fetch(`${QUOTE_API}?symbol=${encodeURIComponent(result.symbol)}`);
       if (!res.ok) {
-        onSelectStock(buildFallbackLiveStock(result));
         setLiveSelectError(`Live quote unavailable for ${result.symbol}. Showing basic profile.`);
-        setQuery('');
         return;
       }
       const data = await res.json() as { quote?: Stock };
       if (!data.quote) {
-        onSelectStock(buildFallbackLiveStock(result));
         setLiveSelectError(`Live quote unavailable for ${result.symbol}. Showing basic profile.`);
-        setQuery('');
         return;
       }
       onSelectStock(data.quote);
-      setQuery('');
     } catch {
-      onSelectStock(buildFallbackLiveStock(result));
       setLiveSelectError(`Live quote unavailable for ${result.symbol}. Showing basic profile.`);
-      setQuery('');
     } finally {
       setSelectingSymbol(null);
     }
