@@ -47,7 +47,7 @@ Charts      Recharts 2 (AreaChart)
 Icons       Lucide React
 Fonts       JetBrains Mono (numbers) + DM Sans (UI) via Google Fonts
 Backend     Vercel Serverless Functions (Node.js 20) — optional legacy proxy
-AI          Groq API · llama-3.3-70b-versatile · called directly from browser
+AI          Groq API · llama-3.1-8b-instant · Vercel serverless proxy (server-side key)
 Deploy      Vercel + GitHub Pages (AI chat works on both)
 ```
 
@@ -58,7 +58,7 @@ Deploy      Vercel + GitHub Pages (AI chat works on both)
 ```
 global-stock-market-app/
 ├── api/
-│   └── chat.ts               # Vercel serverless proxy for Anthropic API
+│   └── chat.ts               # Vercel serverless proxy for Groq API (holds GROQ_API_KEY server-side)
 ├── src/
 │   ├── components/
 │   │   ├── AIChat.tsx         # Collapsible AI chat panel
@@ -69,7 +69,7 @@ global-stock-market-app/
 │   │   ├── StockGrid.tsx      # Responsive grid container
 │   │   └── TickerBar.tsx      # Scrolling marquee ticker strip
 │   ├── data/
-│   │   └── mockData.ts        # 37 stocks, 10 exchanges, indices, OHLCV generator
+│   │   └── mockData.ts        # 130+ stocks, 10 exchanges, indices, OHLCV generator
 │   ├── hooks/
 │   │   ├── useLivePrices.ts   # 5s price simulation hook
 │   │   └── useWatchlist.ts    # localStorage watchlist CRUD hook
@@ -140,24 +140,20 @@ The app is fully functional locally — all stock data, charts, filters, and wat
 
 ## AI Chat Setup
 
-The AI chat uses **Groq API** with `llama-3.3-70b-versatile`. The API key is injected at **build time** via the `GROQ_API_KEY` repository secret — it is embedded as `VITE_GROQ_API_KEY` in the production bundle during the GitHub Actions build.
+The AI chat uses **Groq API** with `llama-3.1-8b-instant`. The API key is stored **server-side** on Vercel as `GROQ_API_KEY` — it is never exposed to the browser. All AI requests are proxied through `https://global-stock-market-app.vercel.app/api/chat`.
 
-### Add the secret to your repository
+### Add the secret to Vercel
 
-1. Go to your repository **Settings → Secrets and variables → Actions**
-2. Click **New repository secret**
-3. Name: `GROQ_API_KEY`, Value: your key from https://console.groq.com/keys
-4. Click **Add secret**
+1. Go to your Vercel project → **Settings → Environment Variables**
+2. Add `GROQ_API_KEY` with your key from https://console.groq.com/keys
+3. Redeploy with `npx vercel --prod`
 
-The GitHub Actions workflow (`.github/workflows/deploy.yml`) picks it up automatically on every push to `main`.
+No build secrets are needed — the frontend only knows the Vercel proxy URL.
 
-### Local development
-
-Create a `.env.local` file (git-ignored) in the project root:
-
-```
-VITE_GROQ_API_KEY=gsk_your_key_here
-```
+### AI Chat Features
+- Auto-detects stock symbol/name as you type and shows a live popup with price and **market Open/Closed status**
+- Deep-dive analysis includes market status, exchange session times, and structured signals
+- System prompt includes all 130+ stocks with real-time Open/Closed exchange status
 
 Then run `npm run dev` — the AI chat will work locally without any extra steps.
 

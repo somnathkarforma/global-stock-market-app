@@ -66,16 +66,17 @@ StockSense is a Bloomberg-terminal-inspired stock market analytics Single Page A
 - **Exchange Status:** Live open/closed indicator for each of the 10 exchanges based on current UTC time and known trading hours
 
 ### FR-09 — AI Chat Panel
-- Collapsible right-side panel powered by **Groq API** (`llama-3.3-70b-versatile`)
-- API key is injected at build time via `VITE_GROQ_API_KEY` (sourced from GitHub Actions secret `GROQ_API_KEY`)
-- If the key is absent (e.g. local dev without `.env.local`), the panel shows a configuration error message
-- Chat history maintained for the session
-- System prompt includes a snapshot of current stock data (top 15 stocks by price)
+- Collapsible right-side panel powered by **Groq API** (`llama-3.1-8b-instant`) via a **Vercel serverless proxy**
+- API key (`GROQ_API_KEY`) is stored server-side on Vercel — never exposed to the browser
+- Frontend calls `https://global-stock-market-app.vercel.app/api/chat`; Vercel proxy forwards to Groq
+- System prompt includes all 130+ stocks with per-stock `[OPEN]`/`[CLOSED]` status and a per-exchange status header
+- Auto stock mention detection: typing a symbol or company name shows a popup with live price and **market Open/Closed badge**
+- Clicking the popup (or submitting a lone symbol) triggers a full deep-dive analysis
+- Deep-dive analysis response includes: Live Price, **Market Status** (OPEN/CLOSED), Exchange/timezone, Market Cap, P/E, Dividend Yield, Analyst Target, Key Signals, Next Steps, Risk Disclaimer
 - Suggested prompt chips shown on first load
 - Typing indicator (animated dots) while awaiting response
-- Supports basic markdown in responses (bold, bullet lists)
-- Calls Groq API directly from the browser (`https://api.groq.com/openai/v1/chat/completions`) — Groq supports browser-side CORS
-- Works on both GitHub Pages and Vercel deployments
+- Supports markdown in responses (bold headers rendered in cyan, bullet lists, italic disclaimers)
+- Works on both GitHub Pages (via Vercel proxy) and Vercel deployments
 
 ### FR-10 — Navigation
 - Top navbar with app logo and two main views: **Stocks** and **Market Overview**
@@ -126,9 +127,10 @@ StockSense is a Bloomberg-terminal-inspired stock market analytics Single Page A
 | Requirement | Choice |
 |-------------|--------|
 | Provider | Groq API |
-| Model | `llama-3.3-70b-versatile` |
-| Key injection | Build-time via `VITE_GROQ_API_KEY` (GitHub Actions secret `GROQ_API_KEY`) |
-| Call origin | Browser-side fetch (Groq supports CORS) |
+| Model | `llama-3.1-8b-instant` |
+| Key storage | Server-side on Vercel (`GROQ_API_KEY` env var) — never in browser bundle |
+| Call origin | Browser → Vercel proxy (`/api/chat`) → Groq |
+| CORS | Proxy allows `somnathkarforma.github.io`, `localhost:5173`, `localhost:4173` |
 | Key source | https://console.groq.com/keys (free tier available) |
 
 ### TR-03 — Typography
@@ -136,7 +138,9 @@ StockSense is a Bloomberg-terminal-inspired stock market analytics Single Page A
 - **DM Sans** — all UI labels and prose (loaded via Google Fonts)
 
 ### TR-04 — Data
-- 37 global stocks across NYSE, NASDAQ, LSE, TSE, HKEX, SSE, Euronext, NSE, BSE, ASX
+- **130+ global stocks** across NYSE, NASDAQ, LSE, TSE, HKEX, SSE, Euronext, NSE, BSE, ASX
+  - NSE: 22 stocks (Reliance, TCS, HDFC Bank, ICICI Bank, Airtel, HCL, Wipro, Bajaj Finance, HUL, Maruti, Sun Pharma, Dr. Reddy’s, Axis Bank, ITC, LTIMindtree, Tech Mahindra, NTPC, ONGC, Power Grid …)
+  - BSE: 9 stocks, TSE: 8 stocks, HKEX: 7 stocks, SSE: 6 stocks, ASX: 8 stocks, NYSE: 8, NASDAQ: 9, LSE: 6, Euronext: 5
 - Historical OHLCV data is generated deterministically via a seeded pseudo-random walk per symbol
 - 10 market indices with static representative values
 - 5 mock news items per stock generated deterministically from a shared headline pool
@@ -146,6 +150,12 @@ StockSense is a Bloomberg-terminal-inspired stock market analytics Single Page A
 |--------|-----|---------|----------------|
 | Vercel | https://global-stock-market-app.vercel.app | ✅ Enabled | `vercel --prod` or Vercel GitHub integration |
 | GitHub Pages | https://somnathkarforma.github.io/global-stock-market-app/ | ✅ Enabled | Push to `main` triggers `.github/workflows/deploy.yml` |
+
+- **Exchange Open/Closed status** is shown:
+  - In the Sidebar exchange filter buttons (green pulsing dot = OPEN, grey = CLOSED)
+  - In the Stock Grid header when an exchange filter is selected
+  - In the AI Chat mention popup alongside the stock symbol
+  - In every AI deep-dive analysis response under “Market Status”
 
 ### TR-06 — Node.js Version
 - Node.js **20.x** required (specified in `package.json` `engines` field for Vercel compatibility)
