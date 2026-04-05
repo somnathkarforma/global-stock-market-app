@@ -45,7 +45,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'gemma2-9b-it',
+        model: 'llama-3.3-70b-versatile',
         max_tokens: 512,
         messages,
       }),
