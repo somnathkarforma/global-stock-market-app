@@ -174,7 +174,7 @@ export const AIChat: React.FC<Props> = ({ stocks }) => {
             </div>
             <div className="min-w-0">
               <p className="text-xs font-semibold text-slate-200">StockSense AI</p>
-              <p className="text-[9px] text-slate-500">Llama 3.3 70B · Groq</p>
+              <p className="text-[9px] text-slate-500">Llama 3.1 8B · Groq</p>
             </div>
           </div>
         )}
