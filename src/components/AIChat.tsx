@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Send, Bot, ChevronDown, Sparkles } from 'lucide-react';
+import { Send, Bot, ChevronDown, Sparkles, Key, Eye, EyeOff, Trash2 } from 'lucide-react';
 import { Stock } from '../data/mockData';
 import { fmt, fmtPct, fmtMktCap } from '../utils/market';
 
@@ -12,6 +12,8 @@ interface Message {
 interface Props {
   stocks: Stock[];
 }
+
+const LS_KEY = 'stocksense_groq_key';
 
 const SUGGESTIONS = [
   'Which stocks have the highest dividend yield?',
@@ -29,7 +31,7 @@ const buildSystemPrompt = (stocks: Stock[]): string => {
 
   return `You are StockSense AI, a Bloomberg-style market intelligence assistant. You analyze stocks, market trends, and financial data. Be concise, data-driven, and professional—like a Wall Street analyst.
 
-Current market data snapshot (first ${stocks.slice(0,15).length} stocks):
+Current market data snapshot (first ${stocks.slice(0, 15).length} stocks):
 ${topStocks}
 
 Total stocks in database: ${stocks.length} across NYSE, NASDAQ, LSE, TSE, HKEX, SSE, Euronext, NSE, BSE, ASX.
@@ -42,195 +44,201 @@ Guidelines:
 - Never give actual financial advice; always note this is for educational purposes`;
 };
 
+const KeySetup: React.FC<{ onSave: (key: string) => void }> = ({ onSave }) => {
+  const [value, setValue] = useState('');
+  const [show, setShow] = useState(false);
+
+  const handleSave = () => {
+    const trimmed = value.trim();
+    if (!trimmed.startsWith('gsk_')) {
+      alert('Groq API keys start with "gsk_". Please check your key.');
+      return;
+    }
+    onSave(trimmed);
+  };
+
+  return (
+    <div className="flex-1 flex flex-col items-center justify-center p-4 text-center">
+      <div className="w-10 h-10 rounded-xl bg-accent-cyan/10 border border-accent-cyan/20 flex items-center justify-center mb-3">
+        <Key className="w-5 h-5 text-accent-cyan" />
+      </div>
+      <p className="text-xs font-semibold text-slate-200 mb-1">Groq API Key Required</p>
+      <p className="text-[10px] text-slate-500 mb-4 leading-relaxed">
+        Get a free key at{' '}
+        <a href="https://console.groq.com/keys" target="_blank" rel="noreferrer" className="text-accent-cyan underline underline-offset-2">
+          console.groq.com/keys
+        </a>
+        <br />
+        Model: Llama 3.3 70B · Key saved to localStorage only
+      </p>
+      <div className="relative w-full mb-3">
+        <input
+          type={show ? 'text' : 'password'}
+          value={value}
+          onChange={e => setValue(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && handleSave()}
+          placeholder="gsk_…"
+          className="w-full bg-navy-800 border border-navy-700/50 rounded-lg pl-3 pr-8 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-accent-cyan/40 font-mono"
+        />
+        <button onClick={() => setShow(s => !s)} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300">
+          {show ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+        </button>
+      </div>
+      <button
+        onClick={handleSave}
+        disabled={!value.trim()}
+        className={`w-full py-2 rounded-lg text-xs font-semibold transition-colors ${value.trim() ? 'bg-accent-cyan/10 border border-accent-cyan/30 text-accent-cyan hover:bg-accent-cyan/20' : 'border border-navy-700/30 text-slate-600 cursor-not-allowed'}`}
+      >
+        Save &amp; Start Chatting
+      </button>
+    </div>
+  );
+};
+
 export const AIChat: React.FC<Props> = ({ stocks }) => {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 'welcome',
-      role: 'assistant',
-      content: 'Hello! I\'m **StockSense AI**, your Bloomberg-style market assistant.\n\nI have live data on **' + stocks.length + ' global stocks** across 10 exchanges. Ask me about market trends, compare stocks, or explore fundamentals.',
-    },
-  ]);
+  const loadKey = () => { try { return localStorage.getItem(LS_KEY) || ''; } catch { return ''; } };
+
+  const [groqKey, setGroqKey] = useState<string>(loadKey);
+  const [messages, setMessages] = useState<Message[]>([{
+    id: 'welcome', role: 'assistant',
+    content: "Hello! I'm **StockSense AI**, your Bloomberg-style market assistant.\n\nI have live data on **" + stocks.length + ' global stocks** across 10 exchanges. Ask me about market trends, compare stocks, or explore fundamentals.',
+  }]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, loading]);
+  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, loading]);
+
+  const handleSaveKey = (key: string) => {
+    try { localStorage.setItem(LS_KEY, key); } catch { /* ignore */ }
+    setGroqKey(key);
+  };
+
+  const handleClearKey = () => {
+    try { localStorage.removeItem(LS_KEY); } catch { /* ignore */ }
+    setGroqKey('');
+    setMessages([{ id: 'welcome', role: 'assistant', content: "Hello! I'm **StockSense AI**, your Bloomberg-style market assistant.\n\nI have live data on **" + stocks.length + ' global stocks** across 10 exchanges. Ask me about market trends, compare stocks, or explore fundamentals.' }]);
+  };
 
   const sendMessage = useCallback(async (text: string) => {
-    if (!text.trim() || loading) return;
-
+    if (!text.trim() || loading || !groqKey) return;
     const userMsg: Message = { id: Date.now().toString(), role: 'user', content: text };
     setMessages(prev => [...prev, userMsg]);
     setInput('');
     setLoading(true);
-
     try {
       const history = [...messages, userMsg].filter(m => m.id !== 'welcome');
-      const response = await fetch('/api/chat', {
+      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${groqKey}` },
         body: JSON.stringify({
-          system: buildSystemPrompt(stocks),
-          messages: history.map(m => ({ role: m.role, content: m.content })),
+          model: 'llama-3.3-70b-versatile',
+          max_tokens: 512,
+          messages: [{ role: 'system', content: buildSystemPrompt(stocks) }, ...history.map(m => ({ role: m.role, content: m.content }))],
         }),
       });
-
       if (!response.ok) {
-        const err = await response.json().catch(() => ({}));
-        throw new Error((err as { error?: string }).error || `API error ${response.status}`);
+        const err = await response.json().catch(() => ({})) as { error?: { message?: string } };
+        throw new Error(err.error?.message || `API error ${response.status}`);
       }
-
-      const data = await response.json() as { content: Array<{ type: string; text: string }> };
-      const assistantText = data.content?.find((b) => b.type === 'text')?.text || 'No response.';
+      const data = await response.json() as { choices: Array<{ message: { content: string } }> };
+      const assistantText = data.choices?.[0]?.message?.content || 'No response.';
       setMessages(prev => [...prev, { id: Date.now().toString(), role: 'assistant', content: assistantText }]);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Unknown error';
-      setMessages(prev => [...prev, {
-        id: Date.now().toString(),
-        role: 'assistant',
-        content: `⚠️ **Error:** ${message}\n\nThe AI proxy is only available on the **Vercel** deployment, not GitHub Pages.`,
-      }]);
+      setMessages(prev => [...prev, { id: Date.now().toString(), role: 'assistant', content: `⚠️ **Error:** ${message}\n\nCheck your Groq key — you can clear it with the trash icon above.` }]);
     } finally {
       setLoading(false);
     }
-  }, [messages, stocks, loading]);
+  }, [messages, stocks, loading, groqKey]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage(input);
-    }
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(input); }
   };
 
-  // Simple markdown renderer
-  const renderContent = (text: string) => {
-    const lines = text.split('\n');
-    return lines.map((line, i) => {
-      if (line.startsWith('**') && line.endsWith('**')) {
-        return <p key={i} className="font-semibold text-slate-100 mb-1">{line.slice(2, -2)}</p>;
-      }
-      if (line.startsWith('- ') || line.startsWith('• ')) {
-        const content = line.replace(/^[-•]\s/, '');
-        const formatted = content.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-        return <li key={i} className="text-slate-300 ml-3 mb-0.5 text-xs" dangerouslySetInnerHTML={{ __html: formatted }} />;
-      }
-      if (!line.trim()) return <br key={i} />;
-      const formatted = line.replace(/\*\*(.+?)\*\*/g, '<strong class="text-slate-100">$1</strong>');
-      return <p key={i} className="text-slate-300 text-xs mb-0.5 leading-relaxed" dangerouslySetInnerHTML={{ __html: formatted }} />;
-    });
-  };
+  const renderContent = (text: string) => text.split('\n').map((line, i) => {
+    if (line.startsWith('**') && line.endsWith('**')) return <p key={i} className="font-semibold text-slate-100 mb-1">{line.slice(2, -2)}</p>;
+    if (line.startsWith('- ') || line.startsWith('• ')) {
+      const formatted = line.replace(/^[-•]\s/, '').replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+      return <li key={i} className="text-slate-300 ml-3 mb-0.5 text-xs" dangerouslySetInnerHTML={{ __html: formatted }} />;
+    }
+    if (!line.trim()) return <br key={i} />;
+    const formatted = line.replace(/\*\*(.+?)\*\*/g, '<strong class="text-slate-100">$1</strong>');
+    return <p key={i} className="text-slate-300 text-xs mb-0.5 leading-relaxed" dangerouslySetInnerHTML={{ __html: formatted }} />;
+  });
 
   return (
     <div className={`flex flex-col bg-surface-1 border-l border-navy-700/40 transition-all duration-300 ${isCollapsed ? 'w-12' : 'w-80'} flex-shrink-0`}>
-      {/* Header */}
       <div className="flex items-center justify-between px-3 py-3 border-b border-navy-700/40">
         {!isCollapsed && (
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-lg bg-accent-cyan/10 border border-accent-cyan/20 flex items-center justify-center">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <div className="w-6 h-6 rounded-lg bg-accent-cyan/10 border border-accent-cyan/20 flex items-center justify-center flex-shrink-0">
               <Sparkles className="w-3.5 h-3.5 text-accent-cyan" />
             </div>
-            <div>
+            <div className="min-w-0">
               <p className="text-xs font-semibold text-slate-200">StockSense AI</p>
-              <p className="text-[9px] text-slate-500">Claude Sonnet</p>
+              <p className="text-[9px] text-slate-500">Llama 3.3 70B · Groq</p>
             </div>
+            {groqKey && (
+              <button onClick={handleClearKey} title="Clear API key" className="ml-auto flex-shrink-0 p-1 text-slate-600 hover:text-accent-red transition-colors">
+                <Trash2 className="w-3 h-3" />
+              </button>
+            )}
           </div>
         )}
-        <button
-          onClick={() => setIsCollapsed(c => !c)}
-          className="ml-auto p-1 text-slate-500 hover:text-slate-300 transition-colors"
-          title={isCollapsed ? 'Expand AI chat' : 'Collapse AI chat'}
-        >
+        <button onClick={() => setIsCollapsed(c => !c)} className="ml-auto p-1 text-slate-500 hover:text-slate-300 transition-colors flex-shrink-0" title={isCollapsed ? 'Expand AI chat' : 'Collapse AI chat'}>
           {isCollapsed ? <Bot className="w-4 h-4" /> : <ChevronDown className="w-4 h-4 rotate-90" />}
         </button>
       </div>
 
       {!isCollapsed && (
         <>
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-3 space-y-3 min-h-0">
-            {messages.map(msg => (
-              <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div
-                  className={`max-w-[85%] rounded-xl px-3 py-2.5 text-xs leading-relaxed ${
-                    msg.role === 'user'
-                      ? 'bg-accent-cyan/10 border border-accent-cyan/20 text-slate-200 rounded-br-sm'
-                      : 'bg-navy-900/60 border border-navy-700/30 text-slate-300 rounded-bl-sm'
-                  }`}
-                >
-                  {msg.role === 'assistant' ? (
-                    <div className="space-y-0.5">{renderContent(msg.content)}</div>
-                  ) : (
-                    <p>{msg.content}</p>
-                  )}
-                </div>
+          {!groqKey ? <KeySetup onSave={handleSaveKey} /> : (
+            <>
+              <div className="flex-1 overflow-y-auto p-3 space-y-3 min-h-0">
+                {messages.map(msg => (
+                  <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`max-w-[85%] rounded-xl px-3 py-2.5 text-xs leading-relaxed ${msg.role === 'user' ? 'bg-accent-cyan/10 border border-accent-cyan/20 text-slate-200 rounded-br-sm' : 'bg-navy-900/60 border border-navy-700/30 text-slate-300 rounded-bl-sm'}`}>
+                      {msg.role === 'assistant' ? <div className="space-y-0.5">{renderContent(msg.content)}</div> : <p>{msg.content}</p>}
+                    </div>
+                  </div>
+                ))}
+                {loading && (
+                  <div className="flex justify-start">
+                    <div className="bg-navy-900/60 border border-navy-700/30 rounded-xl rounded-bl-sm px-3 py-3">
+                      <div className="flex gap-1 items-center"><span className="typing-dot" /><span className="typing-dot" /><span className="typing-dot" /></div>
+                    </div>
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
               </div>
-            ))}
 
-            {/* Typing indicator */}
-            {loading && (
-              <div className="flex justify-start">
-                <div className="bg-navy-900/60 border border-navy-700/30 rounded-xl rounded-bl-sm px-3 py-3">
-                  <div className="flex gap-1 items-center">
-                    <span className="typing-dot" />
-                    <span className="typing-dot" />
-                    <span className="typing-dot" />
+              {messages.length <= 1 && (
+                <div className="px-3 pb-2">
+                  <p className="text-[9px] text-slate-600 uppercase tracking-wider mb-1.5">Suggested</p>
+                  <div className="flex flex-col gap-1">
+                    {SUGGESTIONS.slice(0, 4).map(s => (
+                      <button key={s} onClick={() => sendMessage(s)} className="text-left text-[10px] text-slate-400 hover:text-accent-cyan bg-navy-900/40 hover:bg-navy-700/40 border border-navy-700/30 rounded-lg px-2 py-1.5 transition-colors leading-snug">{s}</button>
+                    ))}
                   </div>
                 </div>
-              </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
+              )}
 
-          {/* Suggestions */}
-          {messages.length <= 1 && (
-            <div className="px-3 pb-2">
-              <p className="text-[9px] text-slate-600 uppercase tracking-wider mb-1.5">Suggested</p>
-              <div className="flex flex-col gap-1">
-                {SUGGESTIONS.slice(0, 4).map(s => (
-                  <button
-                    key={s}
-                    onClick={() => sendMessage(s)}
-                    className="text-left text-[10px] text-slate-400 hover:text-accent-cyan bg-navy-900/40 hover:bg-navy-700/40 border border-navy-700/30 rounded-lg px-2 py-1.5 transition-colors leading-snug"
-                  >
-                    {s}
+              <div className="p-3 border-t border-navy-700/40">
+                <div className="flex gap-2">
+                  <textarea value={input} onChange={e => setInput(e.target.value)} onKeyDown={handleKeyDown} placeholder="Ask about markets…" rows={2}
+                    className="flex-1 bg-navy-800 border border-navy-700/50 rounded-lg px-3 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-accent-cyan/40 focus:ring-1 focus:ring-accent-cyan/15 resize-none transition-colors"
+                  />
+                  <button onClick={() => sendMessage(input)} disabled={!input.trim() || loading}
+                    className={`p-2 rounded-lg border transition-colors self-end ${input.trim() && !loading ? 'bg-accent-cyan/10 border-accent-cyan/30 text-accent-cyan hover:bg-accent-cyan/20' : 'border-navy-700/40 text-slate-600 cursor-not-allowed'}`}>
+                    <Send className="w-4 h-4" />
                   </button>
-                ))}
+                </div>
+                <p className="text-[9px] text-slate-600 mt-1 text-center">Shift+Enter for new line · Enter to send</p>
               </div>
-            </div>
+            </>
           )}
-
-          {/* Input */}
-          <div className="p-3 border-t border-navy-700/40">
-            <div className="flex gap-2">
-              <textarea
-                ref={inputRef}
-                value={input}
-                onChange={e => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Ask about markets…"
-                rows={2}
-                className="flex-1 bg-navy-800 border border-navy-700/50 rounded-lg px-3 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-accent-cyan/40 focus:ring-1 focus:ring-accent-cyan/15 resize-none transition-colors"
-              />
-              <button
-                onClick={() => sendMessage(input)}
-                disabled={!input.trim() || loading}
-                className={`p-2 rounded-lg border transition-colors self-end ${
-                  input.trim() && !loading
-                    ? 'bg-accent-cyan/10 border-accent-cyan/30 text-accent-cyan hover:bg-accent-cyan/20'
-                    : 'border-navy-700/40 text-slate-600 cursor-not-allowed'
-                }`}
-              >
-                <Send className="w-4 h-4" />
-              </button>
-            </div>
-            <p className="text-[9px] text-slate-600 mt-1 text-center">
-              Shift+Enter for new line · Enter to send
-            </p>
-          </div>
         </>
       )}
     </div>
