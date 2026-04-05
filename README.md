@@ -47,7 +47,7 @@ Charts      Recharts 2 (AreaChart)
 Icons       Lucide React
 Fonts       JetBrains Mono (numbers) + DM Sans (UI) via Google Fonts
 Backend     Vercel Serverless Functions (Node.js 20) — optional legacy proxy
-AI          Groq API · llama-3.1-8b-instant · Vercel serverless proxy (server-side key)
+AI          Groq API · llama-3.3-70b-versatile · Vercel serverless proxy (server-side key)
 Deploy      Vercel + GitHub Pages (AI chat works on both)
 ```
 
@@ -140,7 +140,7 @@ The app is fully functional locally — all stock data, charts, filters, and wat
 
 ## AI Chat Setup
 
-The AI chat uses **Groq API** with `llama-3.1-8b-instant`. The API key is stored **server-side** on Vercel as `GROQ_API_KEY` — it is never exposed to the browser. All AI requests are proxied through `https://global-stock-market-app.vercel.app/api/chat`.
+The AI chat uses **Groq API** with `llama-3.3-70b-versatile`. The API key is stored **server-side** on Vercel as `GROQ_API_KEY` — it is never exposed to the browser. All AI requests are proxied through `https://global-stock-market-app.vercel.app/api/chat`.
 
 ### Add the secret to Vercel
 

@@ -66,7 +66,7 @@ StockSense is a Bloomberg-terminal-inspired stock market analytics Single Page A
 - **Exchange Status:** Live open/closed indicator for each of the 10 exchanges based on current UTC time and known trading hours
 
 ### FR-09 — AI Chat Panel
-- Collapsible right-side panel powered by **Groq API** (`llama-3.1-8b-instant`) via a **Vercel serverless proxy**
+- Collapsible right-side panel powered by **Groq API** (`llama-3.3-70b-versatile`) via a **Vercel serverless proxy**
 - API key (`GROQ_API_KEY`) is stored server-side on Vercel — never exposed to the browser
 - Frontend calls `https://global-stock-market-app.vercel.app/api/chat`; Vercel proxy forwards to Groq
 - System prompt includes all 130+ stocks with per-stock `[OPEN]`/`[CLOSED]` status and a per-exchange status header
@@ -127,7 +127,7 @@ StockSense is a Bloomberg-terminal-inspired stock market analytics Single Page A
 | Requirement | Choice |
 |-------------|--------|
 | Provider | Groq API |
-| Model | `llama-3.1-8b-instant` |
+| Model | `llama-3.3-70b-versatile` |
 | Key storage | Server-side on Vercel (`GROQ_API_KEY` env var) — never in browser bundle |
 | Call origin | Browser → Vercel proxy (`/api/chat`) → Groq |
 | CORS | Proxy allows `somnathkarforma.github.io`, `localhost:5173`, `localhost:4173` |
