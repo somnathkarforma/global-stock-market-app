@@ -1,9 +1,11 @@
 # StockSense Terminal
 
-A Bloomberg-terminal-inspired global stock market analytics SPA built with React, TypeScript, and Tailwind CSS. Features live price simulation across 10 global exchanges, interactive charts, sector heatmaps, and an AI-powered market assistant via Anthropic Claude.
+A Bloomberg-terminal-inspired global stock market analytics SPA built with React, TypeScript, and Tailwind CSS. Features live price simulation across 10 global exchanges, interactive charts, sector heatmaps, and an AI-powered market assistant powered by **Groq + Llama 3.3 70B**.
 
-**Live demo:** https://global-stock-market-app.vercel.app *(AI chat enabled)*
+**Live demo (Vercel):** https://global-stock-market-app.vercel.app
 **GitHub Pages:** https://somnathkarforma.github.io/global-stock-market-app/
+
+> AI chat works on **both** deployments — enter your free Groq API key in the panel on first use.
 
 ---
 
@@ -30,7 +32,7 @@ A Bloomberg-terminal-inspired global stock market analytics SPA built with React
 | **Stock Search** | Autocomplete by symbol or company name |
 | **Detail Modal** | Area chart (1D/1W/1M/3M/1Y/5Y), 12 fundamental metrics, news with sentiment |
 | **Market Overview** | 10 global indices, sector heatmap, top 5 gainers/losers, real-time exchange status |
-| **AI Chat** | Anthropic Claude (`claude-sonnet-4-20250514`) with market data context, suggested prompts, typing indicator |
+| **AI Chat** | Groq Llama 3.3 70B with live stock context, suggested prompts, typing indicator — works on GitHub Pages & Vercel |
 
 ---
 
@@ -42,9 +44,9 @@ Styling     Tailwind CSS 3 — custom Bloomberg design tokens
 Charts      Recharts 2 (AreaChart)
 Icons       Lucide React
 Fonts       JetBrains Mono (numbers) + DM Sans (UI) via Google Fonts
-Backend     Vercel Serverless Functions (Node.js 20) — AI proxy only
-AI          Anthropic Claude claude-sonnet-4-20250514
-Deploy      Vercel (primary) + GitHub Pages (static)
+Backend     Vercel Serverless Functions (Node.js 20) — optional legacy proxy
+AI          Groq API · llama-3.3-70b-versatile · called directly from browser
+Deploy      Vercel + GitHub Pages (AI chat works on both)
 ```
 
 ---
@@ -109,7 +111,7 @@ Create a `.env` file in the project root:
 VITE_BASE_PATH=/global-stock-market-app/
 ```
 
-> **AI chat requires Vercel deployment** — the API key lives server-side. See the [AI Chat Setup](#ai-chat-setup) section below.
+> AI chat works on **both** GitHub Pages and Vercel — enter your free Groq API key directly in the chat panel.
 
 ### 3 — Run locally
 
@@ -119,7 +121,7 @@ npm run dev
 
 Open http://localhost:5173/global-stock-market-app/
 
-The app is fully functional locally — all stock data, charts, filters, and watchlist work without any API key. The AI chat panel will show an error until deployed to Vercel.
+The app is fully functional locally — all stock data, charts, filters, and watchlist work without any API key. Enter your Groq API key in the AI chat panel to enable AI responses.
 
 ---
 
@@ -136,37 +138,23 @@ The app is fully functional locally — all stock data, charts, filters, and wat
 
 ## AI Chat Setup
 
-The AI chat uses Anthropic Claude via a **Vercel serverless proxy** (`api/chat.ts`). The API key is stored server-side — it is never included in the frontend bundle.
+The AI chat uses **Groq API** with `llama-3.3-70b-versatile` — called directly from the browser. Your API key is **never** included in the JavaScript bundle or committed to git.
 
-### Deploy to Vercel (required for AI chat)
+### Get a free Groq API key
 
-**1. Install Vercel CLI**
-```bash
-npm install -g vercel
-```
+1. Go to https://console.groq.com/keys and create a free account
+2. Generate a new API key (starts with `gsk_`)
 
-**2. Login and link project**
-```bash
-vercel login
-vercel link
-```
+### Enter the key in the app
 
-**3. Add your Anthropic API key**
+1. Open the app and click the AI chat icon (bottom-right)
+2. Paste your Groq key into the key setup screen
+3. Click **Save Key** — the key is stored in `localStorage` under `stocksense_groq_key`
+4. The key persists across page refreshes; click the trash icon to clear it
 
-Get your key from https://console.anthropic.com/settings/keys, then:
+This works on **both** GitHub Pages and Vercel — no server deployment required.
 
-```bash
-echo "sk-ant-api03-YOUR_KEY_HERE" | vercel env add ANTHROPIC_API_KEY production
-```
-
-**4. Deploy**
-```bash
-vercel --prod
-```
-
-The AI chat panel will now work at your Vercel URL.
-
-> ⚠️ **Never** set `VITE_ANTHROPIC_API_KEY` in your `.env` — that would embed the key in the JavaScript bundle and expose it publicly.
+> ✅ The key is stored only in your browser's `localStorage` and is never sent anywhere except Groq's own API endpoint.
 
 ---
 
@@ -190,7 +178,7 @@ npm run deploy:gh
 
 - Deploys the built `dist/` to the `gh-pages` branch
 - Live at: https://somnathkarforma.github.io/global-stock-market-app/
-- AI chat shows a "proxy not available" message on this host
+- AI chat works here — enter your Groq key in the panel
 
 ---
 

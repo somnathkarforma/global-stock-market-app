@@ -1,7 +1,7 @@
 # StockSense — Requirements
 
 ## Project Overview
-StockSense is a Bloomberg-terminal-inspired stock market analytics Single Page Application (SPA). It is a pure frontend application with a Vercel serverless backend proxy for the AI chat feature. All stock data is simulated via a mock data module with realistic price animation.
+StockSense is a Bloomberg-terminal-inspired stock market analytics Single Page Application (SPA). It is a pure frontend application — all stock data is simulated via a mock data module with realistic price animation, and the AI chat feature calls the Groq API directly from the browser using a runtime-entered API key stored in `localStorage`.
 
 ---
 
@@ -50,13 +50,16 @@ StockSense is a Bloomberg-terminal-inspired stock market analytics Single Page A
 - **Exchange Status:** Live open/closed indicator for each of the 10 exchanges based on current UTC time and known trading hours
 
 ### FR-09 — AI Chat Panel
-- Collapsible right-side panel powered by Anthropic Claude (`claude-sonnet-4-20250514`)
+- Collapsible right-side panel powered by **Groq API** (`llama-3.3-70b-versatile`)
+- On first use, a key setup screen prompts the user to enter a Groq API key (prefix `gsk_`)
+- Key is stored in `localStorage` under `stocksense_groq_key`; a trash icon allows the user to clear it
 - Chat history maintained for the session
-- System prompt includes a snapshot of current stock data
+- System prompt includes a snapshot of current stock data (top 15 stocks by price)
 - Suggested prompt chips shown on first load
 - Typing indicator (animated dots) while awaiting response
 - Supports basic markdown in responses (bold, bullet lists)
-- Calls the `/api/chat` Vercel serverless proxy — API key is never exposed to the browser
+- Calls Groq API directly from the browser (`https://api.groq.com/openai/v1/chat/completions`) — Groq supports browser-side CORS
+- Works on both GitHub Pages and Vercel deployments
 
 ### FR-10 — Navigation
 - Top navbar with app logo and two main views: **Stocks** and **Market Overview**
@@ -71,8 +74,9 @@ StockSense is a Bloomberg-terminal-inspired stock market analytics Single Page A
 - Price tick updates must not cause layout shifts or dropped frames
 
 ### NFR-02 — Security
-- The Anthropic API key must never appear in the frontend JavaScript bundle
-- All AI requests are proxied through a Vercel serverless function (`api/chat.ts`)
+- The Groq API key is never embedded in the JavaScript bundle or committed to git
+- The key is entered by the user at runtime and stored only in their own browser's `localStorage`
+- No server-side secrets are required for any deployment target
 - No third-party analytics or tracking scripts
 
 ### NFR-03 — Responsiveness
@@ -101,14 +105,16 @@ StockSense is a Bloomberg-terminal-inspired stock market analytics Single Page A
 | Charts | Recharts 2 (AreaChart with custom tooltip) |
 | Icons | Lucide React |
 | State | React built-in hooks (`useState`, `useEffect`, `useMemo`, `useCallback`, `useRef`) |
-| Persistence | `localStorage` (watchlist only) |
+| Persistence | `localStorage` (watchlist + Groq API key) |
 
-### TR-02 — Backend (Serverless)
+### TR-02 — AI Integration
 | Requirement | Choice |
 |-------------|--------|
-| Runtime | Vercel Serverless Functions (Node.js 20) |
-| API proxy | `api/chat.ts` — proxies POST requests to Anthropic API |
-| Secret storage | Vercel Environment Variables (`ANTHROPIC_API_KEY`) |
+| Provider | Groq API |
+| Model | `llama-3.3-70b-versatile` |
+| Call origin | Browser-side fetch (Groq supports CORS) |
+| Key storage | User's `localStorage` under `stocksense_groq_key` |
+| Key source | https://console.groq.com/keys (free tier available) |
 
 ### TR-03 — Typography
 - **JetBrains Mono** — all prices, tickers, percentages (loaded via Google Fonts)
@@ -123,8 +129,8 @@ StockSense is a Bloomberg-terminal-inspired stock market analytics Single Page A
 ### TR-05 — Deployment Targets
 | Target | URL | AI Chat |
 |--------|-----|---------|
-| Vercel (primary) | https://global-stock-market-app.vercel.app | ✅ Enabled |
-| GitHub Pages | https://somnathkarforma.github.io/global-stock-market-app/ | ❌ Static only |
+| Vercel | https://global-stock-market-app.vercel.app | ✅ Enabled |
+| GitHub Pages | https://somnathkarforma.github.io/global-stock-market-app/ | ✅ Enabled |
 
 ### TR-06 — Node.js Version
 - Node.js **20.x** required (specified in `package.json` `engines` field for Vercel compatibility)
@@ -135,8 +141,9 @@ StockSense is a Bloomberg-terminal-inspired stock market analytics Single Page A
 
 | Variable | Scope | Description |
 |----------|-------|-------------|
-| `ANTHROPIC_API_KEY` | Vercel server-side only | Secret key for Anthropic Claude API |
 | `VITE_BASE_PATH` | Build-time (Vite) | Base URL path for GitHub Pages routing (e.g. `/global-stock-market-app/`) |
+
+> The Groq API key is **not** an environment variable. It is entered by the user at runtime and stored in their browser's `localStorage`. No secrets need to be configured on any hosting platform.
 
 ---
 
