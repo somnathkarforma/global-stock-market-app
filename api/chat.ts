@@ -6,6 +6,24 @@ const ALLOWED_ORIGINS = [
   'http://localhost:4173',
 ];
 
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+async function callGroq(apiKey: string, body: string, attempt = 0): Promise<Response> {
+  const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+    body,
+  });
+  // Retry on 429 with exponential backoff (max 3 attempts)
+  if (response.status === 429 && attempt < 3) {
+    const retryAfter = Number(response.headers.get('retry-after') ?? 0);
+    const delay = retryAfter > 0 ? retryAfter * 1000 : Math.min(1000 * 2 ** attempt, 16000);
+    await sleep(delay);
+    return callGroq(apiKey, body, attempt + 1);
+  }
+  return response;
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const origin = req.headers.origin ?? '';
   if (ALLOWED_ORIGINS.includes(origin)) {
@@ -38,18 +56,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'Invalid request body' });
     }
 
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
+    const response = await callGroq(
+      apiKey,
+      JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         max_tokens: 512,
         messages,
       }),
-    });
+    );
 
     const data = await response.json();
 

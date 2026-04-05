@@ -31,8 +31,13 @@ const buildSystemPrompt = (stocks: Stock[]): string => {
     return `${ex.name}:${open ? 'OPEN' : 'CLOSED'}`;
   }).join(' | ');
 
-  // Compact per-stock line — only fields the AI needs for analysis
-  const allStocks = stocks.map(s => {
+  // Limit to top 60 stocks by market cap to stay well within TPM limits
+  const topStocks = [...stocks]
+    .sort((a, b) => b.fundamentals.marketCap - a.fundamentals.marketCap)
+    .slice(0, 60);
+
+  // Compact per-stock line
+  const stockLines = topStocks.map(s => {
     const open = isExchangeOpen(s.exchange);
     const f = s.fundamentals;
     return `${s.symbol}|${s.exchange}${open ? '' : '[C]'}|${fmt(s.price, s.currency)}|${s.changePercent > 0 ? '+' : ''}${s.changePercent.toFixed(2)}%|PE:${f.peRatio}|EPS:${f.eps}|DY:${f.dividendYield}%|beta:${f.beta}|ROE:${f.roe}%|tgt:${fmt(f.analystTarget, s.currency)}|mktcap:${fmtMktCap(f.marketCap, s.currency)}|${s.sector}`;
@@ -40,8 +45,8 @@ const buildSystemPrompt = (stocks: Stock[]): string => {
 
   return `You are StockSense AI, a Bloomberg-style market intelligence assistant.
 Exchange status: ${exchangeStatus}
-Format: SYMBOL|EXCHANGE[C=closed]|PRICE|CHANGE|PE|EPS|DivYield|Beta|ROE|AnalystTarget|MarketCap|Sector
-${allStocks}
+Top ${topStocks.length} stocks by market cap. Format: SYMBOL|EXCHANGE[C=closed]|PRICE|CHANGE|PE|EPS|DivYield|Beta|ROE|AnalystTarget|MarketCap|Sector
+${stockLines}
 
 For stock analysis respond with this structure:
 **[Name] ([SYMBOL]) Analysis**
