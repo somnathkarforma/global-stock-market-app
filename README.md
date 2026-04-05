@@ -1,24 +1,9 @@
 # StockSense Terminal
 
-A Bloomberg-terminal-inspired global stock market analytics SPA built with React, TypeScript, and Tailwind CSS. Features live price simulation across 10 global exchanges, interactive charts, sector heatmaps, and an AI-powered market assistant powered by **Groq + Llama 3.3 70B**.
+A Bloomberg-terminal-inspired global stock market analytics SPA built with React, TypeScript, and Tailwind CSS. Features live price simulation across 10 global exchanges, interactive charts, sector heatmaps, and an AI-powered market assistant powered by **Groq + Llama 3.1 8B Instant**.
 
 **Live demo (Vercel):** https://global-stock-market-app.vercel.app
 **GitHub Pages:** https://somnathkarforma.github.io/global-stock-market-app/
-
-> AI chat works on **both** deployments — enter your free Groq API key in the panel on first use.
-
----
-
-## Screenshots
-
-> Open the Vercel URL above to see the full application.
-
-**Key views:**
-- 🏦 Enterprise header — live market pulse (gainers/losers/avg change), PRO brand banner with gradient grid
-- 📊 Stock cards grid with live sparklines and price flash animations
-- 📈 Stock detail modal — Recharts area chart with 6 time periods + fundamentals + news
-- 🌍 Market overview — global indices, sector heatmap, gainers/losers, exchange status
-- 🤖 AI chat panel — Anthropic Claude with live stock context
 
 ---
 
@@ -26,15 +11,15 @@ A Bloomberg-terminal-inspired global stock market analytics SPA built with React
 
 | Feature | Description |
 |---------|-------------|
-| **Enterprise Header** | Professional branding banner with live Gainers / Losers / Avg-Change pulse, gradient grid overlay, PRO badge, tagline |
-| **Live Prices** | All 37 stocks update every 5 seconds via a ±random walk simulation |
-| **Ticker Bar** | Scrolling marquee — symbol (bold cyan) · exchange badge (cyan outline) · company name (light slate) · price · directional arrow (▲/▼) · % change |
-| **Exchange Filter** | Toggle any of 10 exchanges (NYSE, NASDAQ, LSE, TSE, HKEX, SSE, Euronext, NSE, BSE, ASX) |
+| **Enterprise Header** | Professional branding banner with live Gainers / Losers / Avg-Change pulse, gradient grid overlay, PRO badge |
+| **Live Prices** | 150+ stocks update every 5 seconds via ±random walk simulation with price flash animations |
+| **Ticker Bar** | Scrolling marquee (240s, half-speed) — symbol · exchange badge · company name · price · ▲/▼ % change |
+| **Live Stock Search** | Instant local matches + debounced Yahoo Finance live search covering all 10 exchanges — any listed equity worldwide |
+| **Exchange Filter** | Toggle any of 10 exchanges with live Open/Closed status indicators (green pulsing dot / grey) |
 | **Watchlist** | Star stocks; persisted to `localStorage` |
-| **Stock Search** | Autocomplete by symbol or company name |
 | **Detail Modal** | Area chart (1D/1W/1M/3M/1Y/5Y), 12 fundamental metrics, news with sentiment |
 | **Market Overview** | 10 global indices, sector heatmap, top 5 gainers/losers, real-time exchange status |
-| **AI Chat** | Groq Llama 3.3 70B with live stock context, suggested prompts, typing indicator — works on GitHub Pages & Vercel |
+| **AI Chat** | Groq Llama 3.1 8B Instant via Vercel **Edge** function — no timeout, fast 1–2s responses, live stock context injected per query |
 
 ---
 
@@ -46,9 +31,10 @@ Styling     Tailwind CSS 3 — custom Bloomberg design tokens
 Charts      Recharts 2 (AreaChart)
 Icons       Lucide React
 Fonts       JetBrains Mono (numbers) + DM Sans (UI) via Google Fonts
-Backend     Vercel Serverless Functions (Node.js 20) — optional legacy proxy
-AI          Groq API · llama-3.3-70b-versatile · Vercel serverless proxy (server-side key)
-Deploy      Vercel + GitHub Pages (AI chat works on both)
+AI proxy    Vercel Edge Function (no timeout on hobby plan)
+AI model    Groq API · llama-3.1-8b-instant
+Live data   Yahoo Finance (via Vercel proxy) for search + quotes
+Deploy      Vercel (production) + GitHub Pages (static)
 ```
 
 ---
@@ -58,34 +44,31 @@ Deploy      Vercel + GitHub Pages (AI chat works on both)
 ```
 global-stock-market-app/
 ├── api/
-│   └── chat.ts               # Vercel serverless proxy for Groq API (holds GROQ_API_KEY server-side)
+│   ├── chat.ts               # Vercel Edge function — Groq AI proxy (no 10s limit)
+│   ├── stock-search.ts       # Vercel function — Yahoo Finance symbol search
+│   └── stock-quote.ts        # Vercel function — Yahoo Finance live quote fetcher
 ├── src/
 │   ├── components/
 │   │   ├── AIChat.tsx         # Collapsible AI chat panel
 │   │   ├── MarketOverview.tsx # Indices, heatmap, gainers/losers, exchange status
-│   │   ├── Sidebar.tsx        # Exchange filters, watchlist, search
+│   │   ├── Sidebar.tsx        # Live search (local + Yahoo Finance), exchange filters, watchlist
 │   │   ├── StockCard.tsx      # Card with live sparkline + flash
 │   │   ├── StockDetailModal.tsx # Chart tabs + fundamentals + news modal
 │   │   ├── StockGrid.tsx      # Responsive grid container
 │   │   └── TickerBar.tsx      # Scrolling marquee ticker strip
 │   ├── data/
-│   │   └── mockData.ts        # 130+ stocks, 10 exchanges, indices, OHLCV generator
+│   │   └── mockData.ts        # 150+ stocks, 10 exchanges, indices, OHLCV generator
 │   ├── hooks/
 │   │   ├── useLivePrices.ts   # 5s price simulation hook
 │   │   └── useWatchlist.ts    # localStorage watchlist CRUD hook
 │   ├── utils/
 │   │   └── market.ts          # Price formatters, exchange open/closed logic
-│   ├── App.tsx                # Root layout
+│   ├── App.tsx                # Root layout + live stock cache for Yahoo-fetched stocks
 │   ├── index.css              # Tailwind directives + global styles + animations
-│   ├── main.tsx               # React DOM entry point
-│   └── vite-env.d.ts          # Vite env type declarations
+│   └── main.tsx               # React DOM entry point
 ├── .env                       # Local env vars (VITE_BASE_PATH only — no secrets)
-├── index.html                 # HTML shell with Google Fonts
-├── package.json
-├── tailwind.config.cjs        # Custom Bloomberg colour palette + animations
-├── tsconfig.json
-├── vercel.json                # Vercel routing config
-└── vite.config.ts
+├── vercel.json                # Vercel routing + function duration config
+└── vite.config.ts             # Dev proxy for /api routes → Vercel
 ```
 
 ---
@@ -93,7 +76,7 @@ global-stock-market-app/
 ## Getting Started
 
 ### Prerequisites
-- Node.js **20.x** (required — higher versions may work locally but Vercel uses 20)
+- Node.js **20.x**
 - npm 9+
 
 ### 1 — Clone and install
@@ -104,26 +87,15 @@ cd global-stock-market-app
 npm install
 ```
 
-### 2 — Configure environment
-
-Create a `.env` file in the project root:
-
-```env
-# GitHub Pages base path — required for local preview of GH Pages build
-VITE_BASE_PATH=/global-stock-market-app/
-```
-
-> AI chat works on **both** GitHub Pages and Vercel — enter your free Groq API key directly in the chat panel.
-
-### 3 — Run locally
+### 2 — Run locally
 
 ```bash
 npm run dev
 ```
 
-Open http://localhost:5173/global-stock-market-app/
+Open http://localhost:5173/
 
-The app is fully functional locally — all stock data, charts, filters, and watchlist work without any API key. Enter your Groq API key in the AI chat panel to enable AI responses.
+All stock data, charts, filters, and watchlist work without any API key. The dev server proxies `/api/stock-search` and `/api/stock-quote` to the live Vercel deployment automatically.
 
 ---
 
@@ -138,90 +110,39 @@ The app is fully functional locally — all stock data, charts, filters, and wat
 
 ---
 
-## AI Chat Setup
+## AI Chat
 
-The AI chat uses **Groq API** with `llama-3.3-70b-versatile`. The API key is stored **server-side** on Vercel as `GROQ_API_KEY` — it is never exposed to the browser. All AI requests are proxied through `https://global-stock-market-app.vercel.app/api/chat`.
+The AI chat uses **Groq API** with `llama-3.1-8b-instant` via a **Vercel Edge function**.
 
-### Add the secret to Vercel
+### Why Edge?
+Vercel hobby plan serverless functions are hard-capped at **10 seconds**. The Edge runtime has no such cap, allowing the AI to respond reliably without timeouts.
 
-1. Go to your Vercel project → **Settings → Environment Variables**
-2. Add `GROQ_API_KEY` with your key from https://console.groq.com/keys
-3. Redeploy with `npx vercel --prod`
+### How it works
+- **Minimal static system prompt** (~300 tokens) — no bulk stock table sent on every message
+- **Per-query stock injection** — only stocks mentioned in the user's message get live data injected inline (up to 3 stocks)
+- **Conversation history** trimmed to the last 6 messages
+- Total per-request token cost: ~400–700 tokens — well within Groq's 12,000 TPM free limit
 
-No build secrets are needed — the frontend only knows the Vercel proxy URL.
+### Setup
+1. Get a free key at https://console.groq.com/keys
+2. In Vercel: **Settings → Environment Variables** → add `GROQ_API_KEY`
+3. Redeploy: `npx vercel --prod`
 
-### AI Chat Features
-- Auto-detects stock symbol/name as you type and shows a live popup with price and **market Open/Closed status**
-- Deep-dive analysis includes market status, exchange session times, and structured signals
-- System prompt uses top 60 stocks by market cap in compact format (~3,800 tokens) — fits comfortably within the 12,000 TPM free-tier limit
-- Proxy auto-retries on HTTP 429 (rate limit) with exponential backoff — up to 3 attempts, silent to the user
-
-Then run `npm run dev` — the AI chat will work locally without any extra steps.
-
-> ⚠️ Never commit `.env.local` or add `VITE_GROQ_API_KEY` to `.env` — it would be committed to git and exposed publicly.
+### Live Stock Search
+Search finds any stock on all 10 exchanges:
+- **Local results** appear instantly from the 150+ mock stock catalog
+- **Live results** stream in from Yahoo Finance after 350ms for any stock not in the local catalog
+- Clicking a live result fetches a full real-time quote and opens the detail modal
 
 ---
 
 ## Deployment
 
-### Vercel (AI chat enabled)
-
+### Vercel (primary — AI enabled)
 ```bash
-vercel --prod
+npx vercel --prod
 ```
+Set `GROQ_API_KEY` in Vercel environment variables.
 
-- Production URL: https://global-stock-market-app.vercel.app
-- Add `GROQ_API_KEY` as a production environment variable in the Vercel dashboard
-- Vercel bakes it into the build as `VITE_GROQ_API_KEY` automatically
-
-### GitHub Pages (AI chat enabled via GitHub Actions)
-
-```bash
-git push origin main
-```
-
-- The workflow in `.github/workflows/deploy.yml` builds and deploys automatically
-- Reads `GROQ_API_KEY` from repository secrets and injects it at build time
-- Live at: https://somnathkarforma.github.io/global-stock-market-app/
-
----
-
-## Design System
-
-Custom Tailwind tokens defined in `tailwind.config.cjs`:
-
-```
-navy-950   #03060f   — page background
-navy-900   #060d1f   — navbar / sidebar
-navy-800   #0a1628   — inputs
-surface-1  #0d1b2e   — cards
-surface-2  #111e30   — modals / panels
-
-accent.green  #00ff87  — gains, open status, positive sentiment
-accent.red    #ff3b5c  — losses, negative sentiment
-accent.cyan   #00d4ff  — primary interactive / highlights
-accent.amber  #ffb800  — watchlist stars
-```
-
----
-
-## Data & Exchanges
-
-| Exchange | Country | Currency | Stocks |
-|----------|---------|----------|--------|
-| NYSE | USA | USD | BRK.B, JPM, XOM, JNJ, V, UNH, GS |
-| NASDAQ | USA | USD | AAPL, MSFT, NVDA, GOOGL, META, AMZN, TSLA, AVGO |
-| LSE | UK | GBP | HSBA, AZN, SHEL, BP, ULVR |
-| TSE | Japan | JPY | 7203 (Toyota), 6758 (Sony), 9984 (SoftBank) |
-| HKEX | Hong Kong | HKD | 0700 (Tencent), 9988 (Alibaba), 1299 (AIA) |
-| Euronext | EU | EUR | AIR (Airbus), MC (LVMH), SAN (Sanofi) |
-| NSE | India | INR | RELIANCE, TCS |
-| BSE | India | INR | HDFCBANK, INFY |
-| SSE | China | CNY | 600519 (Kweichow Moutai), 601398 (ICBC) |
-| ASX | Australia | AUD | BHP, CBA, CSL |
-
----
-
-## License
-
-MIT — free to use, modify and distribute.
+### GitHub Pages (static frontend)
+Push to `main` — GitHub Actions (`.github/workflows/deploy.yml`) auto-builds and deploys. AI chat routes to the Vercel proxy.
