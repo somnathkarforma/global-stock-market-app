@@ -21,17 +21,33 @@ const TickerItem: React.FC<{ stock: Stock; update?: PriceUpdate }> = ({ stock, u
     return () => clearTimeout(t);
   }, [update]);
 
+  const isUp = stock.changePercent >= 0;
+
   return (
-    <div className={`flex items-center gap-2 px-4 py-1 rounded ${flash} transition-colors`}>
-      <span className="font-mono text-xs font-semibold text-accent-cyan tracking-wide whitespace-nowrap">
-        {stock.symbol}
+    <div className={`flex items-center gap-2.5 px-4 py-1 rounded ${flash} transition-colors`}>
+      {/* Symbol + Exchange badge */}
+      <div className="flex items-center gap-1.5 whitespace-nowrap">
+        <span className="font-mono text-xs font-bold text-accent-cyan tracking-wide">
+          {stock.symbol}
+        </span>
+        <span className="text-[8px] font-semibold text-navy-900 bg-slate-500/60 rounded px-1 py-0.5 uppercase tracking-wider leading-none">
+          {stock.exchange}
+        </span>
+      </div>
+      {/* Company name — short */}
+      <span className="text-[10px] text-slate-500 whitespace-nowrap hidden sm:inline">
+        {stock.name.split(' ').slice(0, 2).join(' ')}
       </span>
+      {/* Price */}
       <span className="font-mono text-xs text-slate-200 whitespace-nowrap">
         {fmt(stock.price, stock.currency)}
       </span>
-      <span className={`font-mono text-xs whitespace-nowrap ${changeColor(stock.changePercent)}`}>
-        {fmtPct(stock.changePercent)}
+      {/* Change % with arrow */}
+      <span className={`font-mono text-xs whitespace-nowrap font-medium ${changeColor(stock.changePercent)}`}>
+        {isUp ? '▲' : '▼'} {fmtPct(stock.changePercent)}
       </span>
+      {/* Divider */}
+      <span className="text-navy-700 text-xs select-none">│</span>
     </div>
   );
 };
@@ -40,7 +56,7 @@ export const TickerBar: React.FC<Props> = ({ stocks, lastUpdated }) => {
   const items = [...stocks, ...stocks]; // doubled for seamless loop
 
   return (
-    <div className="w-full bg-navy-900 border-b border-navy-700/60 overflow-hidden select-none py-1.5">
+    <div className="w-full bg-navy-950/80 border-t border-accent-cyan/10 border-b border-navy-700/60 overflow-hidden select-none py-1">
       <div className="flex animate-marquee whitespace-nowrap" style={{ width: 'max-content' }}>
         {items.map((stock, i) => (
           <TickerItem
