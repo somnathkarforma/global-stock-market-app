@@ -69,7 +69,8 @@ StockSense is a Bloomberg-terminal-inspired stock market analytics Single Page A
 - Collapsible right-side panel powered by **Groq API** (`llama-3.3-70b-versatile`) via a **Vercel serverless proxy**
 - API key (`GROQ_API_KEY`) is stored server-side on Vercel — never exposed to the browser
 - Frontend calls `https://global-stock-market-app.vercel.app/api/chat`; Vercel proxy forwards to Groq
-- System prompt includes all 130+ stocks with per-stock `[OPEN]`/`[CLOSED]` status and a per-exchange status header
+- Proxy retries automatically on HTTP 429 (rate limit) with exponential backoff — up to 3 attempts, respecting `retry-after` header
+- System prompt includes top 60 stocks by market cap (compact pipe-delimited format) plus per-exchange Open/Closed status — ~3,800 tokens, well within the 12,000 TPM free-tier limit
 - Auto stock mention detection: typing a symbol or company name shows a popup with live price and **market Open/Closed badge**
 - Clicking the popup (or submitting a lone symbol) triggers a full deep-dive analysis
 - Deep-dive analysis response includes: Live Price, **Market Status** (OPEN/CLOSED), Exchange/timezone, Market Cap, P/E, Dividend Yield, Analyst Target, Key Signals, Next Steps, Risk Disclaimer
@@ -130,6 +131,9 @@ StockSense is a Bloomberg-terminal-inspired stock market analytics Single Page A
 | Model | `llama-3.3-70b-versatile` |
 | Key storage | Server-side on Vercel (`GROQ_API_KEY` env var) — never in browser bundle |
 | Call origin | Browser → Vercel proxy (`/api/chat`) → Groq |
+| Rate limit handling | Auto retry up to 3× with exponential backoff on HTTP 429 |
+| System prompt size | ~3,800 tokens (top 60 stocks by market cap, compact format) |
+| Free TPM limit | 12,000 — prompt leaves ~8,200 tokens headroom per minute |
 | CORS | Proxy allows `somnathkarforma.github.io`, `localhost:5173`, `localhost:4173` |
 | Key source | https://console.groq.com/keys (free tier available) |
 

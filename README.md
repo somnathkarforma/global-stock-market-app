@@ -153,7 +153,8 @@ No build secrets are needed — the frontend only knows the Vercel proxy URL.
 ### AI Chat Features
 - Auto-detects stock symbol/name as you type and shows a live popup with price and **market Open/Closed status**
 - Deep-dive analysis includes market status, exchange session times, and structured signals
-- System prompt includes all 130+ stocks with real-time Open/Closed exchange status
+- System prompt uses top 60 stocks by market cap in compact format (~3,800 tokens) — fits comfortably within the 12,000 TPM free-tier limit
+- Proxy auto-retries on HTTP 429 (rate limit) with exponential backoff — up to 3 attempts, silent to the user
 
 Then run `npm run dev` — the AI chat will work locally without any extra steps.
 
