@@ -138,47 +138,52 @@ The app is fully functional locally — all stock data, charts, filters, and wat
 
 ## AI Chat Setup
 
-The AI chat uses **Groq API** with `llama-3.3-70b-versatile` — called directly from the browser. Your API key is **never** included in the JavaScript bundle or committed to git.
+The AI chat uses **Groq API** with `llama-3.3-70b-versatile`. The API key is injected at **build time** via the `GROQ_API_KEY` repository secret — it is embedded as `VITE_GROQ_API_KEY` in the production bundle during the GitHub Actions build.
 
-### Get a free Groq API key
+### Add the secret to your repository
 
-1. Go to https://console.groq.com/keys and create a free account
-2. Generate a new API key (starts with `gsk_`)
+1. Go to your repository **Settings → Secrets and variables → Actions**
+2. Click **New repository secret**
+3. Name: `GROQ_API_KEY`, Value: your key from https://console.groq.com/keys
+4. Click **Add secret**
 
-### Enter the key in the app
+The GitHub Actions workflow (`.github/workflows/deploy.yml`) picks it up automatically on every push to `main`.
 
-1. Open the app and click the AI chat icon (bottom-right)
-2. Paste your Groq key into the key setup screen
-3. Click **Save Key** — the key is stored in `localStorage` under `stocksense_groq_key`
-4. The key persists across page refreshes; click the trash icon to clear it
+### Local development
 
-This works on **both** GitHub Pages and Vercel — no server deployment required.
+Create a `.env.local` file (git-ignored) in the project root:
 
-> ✅ The key is stored only in your browser's `localStorage` and is never sent anywhere except Groq's own API endpoint.
+```
+VITE_GROQ_API_KEY=gsk_your_key_here
+```
+
+Then run `npm run dev` — the AI chat will work locally without any extra steps.
+
+> ⚠️ Never commit `.env.local` or add `VITE_GROQ_API_KEY` to `.env` — it would be committed to git and exposed publicly.
 
 ---
 
 ## Deployment
 
-### Vercel (recommended — AI chat enabled)
+### Vercel (AI chat enabled)
 
 ```bash
 vercel --prod
 ```
 
 - Production URL: https://global-stock-market-app.vercel.app
-- `api/chat.ts` is automatically deployed as a serverless function
-- Set `ANTHROPIC_API_KEY` as a production env variable in Vercel dashboard or via CLI
+- Add `GROQ_API_KEY` as a production environment variable in the Vercel dashboard
+- Vercel bakes it into the build as `VITE_GROQ_API_KEY` automatically
 
-### GitHub Pages (static — no AI chat)
+### GitHub Pages (AI chat enabled via GitHub Actions)
 
 ```bash
-npm run deploy:gh
+git push origin main
 ```
 
-- Deploys the built `dist/` to the `gh-pages` branch
+- The workflow in `.github/workflows/deploy.yml` builds and deploys automatically
+- Reads `GROQ_API_KEY` from repository secrets and injects it at build time
 - Live at: https://somnathkarforma.github.io/global-stock-market-app/
-- AI chat works here — enter your Groq key in the panel
 
 ---
 

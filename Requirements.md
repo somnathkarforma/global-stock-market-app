@@ -1,7 +1,7 @@
 # StockSense — Requirements
 
 ## Project Overview
-StockSense is a Bloomberg-terminal-inspired stock market analytics Single Page Application (SPA). It is a pure frontend application — all stock data is simulated via a mock data module with realistic price animation, and the AI chat feature calls the Groq API directly from the browser using a runtime-entered API key stored in `localStorage`.
+StockSense is a Bloomberg-terminal-inspired stock market analytics Single Page Application (SPA). It is a pure frontend application — all stock data is simulated via a mock data module with realistic price animation. The Groq API key for AI chat is injected at build time via a GitHub Actions secret and baked into the production bundle as a Vite environment variable.
 
 ---
 
@@ -51,8 +51,8 @@ StockSense is a Bloomberg-terminal-inspired stock market analytics Single Page A
 
 ### FR-09 — AI Chat Panel
 - Collapsible right-side panel powered by **Groq API** (`llama-3.3-70b-versatile`)
-- On first use, a key setup screen prompts the user to enter a Groq API key (prefix `gsk_`)
-- Key is stored in `localStorage` under `stocksense_groq_key`; a trash icon allows the user to clear it
+- API key is injected at build time via `VITE_GROQ_API_KEY` (sourced from GitHub Actions secret `GROQ_API_KEY`)
+- If the key is absent (e.g. local dev without `.env.local`), the panel shows a configuration error message
 - Chat history maintained for the session
 - System prompt includes a snapshot of current stock data (top 15 stocks by price)
 - Suggested prompt chips shown on first load
@@ -74,9 +74,8 @@ StockSense is a Bloomberg-terminal-inspired stock market analytics Single Page A
 - Price tick updates must not cause layout shifts or dropped frames
 
 ### NFR-02 — Security
-- The Groq API key is never embedded in the JavaScript bundle or committed to git
-- The key is entered by the user at runtime and stored only in their own browser's `localStorage`
-- No server-side secrets are required for any deployment target
+- The Groq API key is stored as a GitHub Actions secret (`GROQ_API_KEY`) and injected at build time as `VITE_GROQ_API_KEY`
+- The key is never committed to git; `.env.local` is git-ignored
 - No third-party analytics or tracking scripts
 
 ### NFR-03 — Responsiveness
@@ -105,15 +104,15 @@ StockSense is a Bloomberg-terminal-inspired stock market analytics Single Page A
 | Charts | Recharts 2 (AreaChart with custom tooltip) |
 | Icons | Lucide React |
 | State | React built-in hooks (`useState`, `useEffect`, `useMemo`, `useCallback`, `useRef`) |
-| Persistence | `localStorage` (watchlist + Groq API key) |
+| Persistence | `localStorage` (watchlist only) |
 
 ### TR-02 — AI Integration
 | Requirement | Choice |
 |-------------|--------|
 | Provider | Groq API |
 | Model | `llama-3.3-70b-versatile` |
+| Key injection | Build-time via `VITE_GROQ_API_KEY` (GitHub Actions secret `GROQ_API_KEY`) |
 | Call origin | Browser-side fetch (Groq supports CORS) |
-| Key storage | User's `localStorage` under `stocksense_groq_key` |
 | Key source | https://console.groq.com/keys (free tier available) |
 
 ### TR-03 — Typography
@@ -127,10 +126,10 @@ StockSense is a Bloomberg-terminal-inspired stock market analytics Single Page A
 - 5 mock news items per stock generated deterministically from a shared headline pool
 
 ### TR-05 — Deployment Targets
-| Target | URL | AI Chat |
-|--------|-----|---------|
-| Vercel | https://global-stock-market-app.vercel.app | ✅ Enabled |
-| GitHub Pages | https://somnathkarforma.github.io/global-stock-market-app/ | ✅ Enabled |
+| Target | URL | AI Chat | Deploy trigger |
+|--------|-----|---------|----------------|
+| Vercel | https://global-stock-market-app.vercel.app | ✅ Enabled | `vercel --prod` or Vercel GitHub integration |
+| GitHub Pages | https://somnathkarforma.github.io/global-stock-market-app/ | ✅ Enabled | Push to `main` triggers `.github/workflows/deploy.yml` |
 
 ### TR-06 — Node.js Version
 - Node.js **20.x** required (specified in `package.json` `engines` field for Vercel compatibility)
@@ -141,9 +140,10 @@ StockSense is a Bloomberg-terminal-inspired stock market analytics Single Page A
 
 | Variable | Scope | Description |
 |----------|-------|-------------|
+| `VITE_GROQ_API_KEY` | Build-time (Vite) | Groq API key — sourced from GitHub Actions secret `GROQ_API_KEY` or Vercel env var `GROQ_API_KEY`. Never commit to git. |
 | `VITE_BASE_PATH` | Build-time (Vite) | Base URL path for GitHub Pages routing (e.g. `/global-stock-market-app/`) |
 
-> The Groq API key is **not** an environment variable. It is entered by the user at runtime and stored in their browser's `localStorage`. No secrets need to be configured on any hosting platform.
+> For local development, create `.env.local` (git-ignored) and set `VITE_GROQ_API_KEY=gsk_...`.
 
 ---
 
