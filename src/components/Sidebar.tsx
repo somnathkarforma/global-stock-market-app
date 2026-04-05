@@ -18,6 +18,8 @@ interface LiveResult {
   exchDisp: string;
 }
 
+const normalizeSymbol = (symbol: string): string => symbol.toUpperCase().split('.')[0];
+
 interface Props {
   stocks: Stock[];
   selectedExchanges: string[];
@@ -64,10 +66,11 @@ export const Sidebar: React.FC<Props> = ({
       try {
         const res = await fetch(`${SEARCH_API}?q=${encodeURIComponent(query.trim())}`);
         if (res.ok) {
-          const data = await res.json() as { quotes: LiveResult[] };
-          const localSymbols = new Set(stocks.map(s => s.symbol));
+          const data = await res.json() as { quotes?: LiveResult[]; result?: LiveResult[] };
+          const localSymbols = new Set(stocks.map(s => normalizeSymbol(s.symbol)));
+          const incoming = (Array.isArray(data.quotes) ? data.quotes : data.result) ?? [];
           // Only show live results not already in mock data
-          setLiveResults((data.quotes ?? []).filter(q => !localSymbols.has(q.symbol)));
+          setLiveResults(incoming.filter(q => !localSymbols.has(normalizeSymbol(q.symbol))));
         }
       } catch {
         // silently fail — local results still shown

@@ -1,11 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-const ALLOWED_ORIGINS = [
-  'https://somnathkarforma.github.io',
-  'http://localhost:5173',
-  'http://localhost:4173',
-];
-
 const YF_EXCHANGE_MAP: Record<string, string> = {
   NYQ: 'NYSE', NYE: 'NYSE', NYB: 'NYSE',
   NMS: 'NASDAQ', NGM: 'NASDAQ', NCM: 'NASDAQ', NNM: 'NASDAQ',
@@ -34,10 +28,8 @@ const SECTOR_MAP: Record<string, string> = {
 };
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const origin = req.headers.origin ?? '';
-  if (ALLOWED_ORIGINS.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  }
+  // Public read-only endpoint used by web clients from multiple origins.
+  res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 

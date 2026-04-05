@@ -1,11 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-const ALLOWED_ORIGINS = [
-  'https://somnathkarforma.github.io',
-  'http://localhost:5173',
-  'http://localhost:4173',
-];
-
 // Yahoo Finance exchange code → our Exchange names
 const YF_EXCHANGE_MAP: Record<string, string> = {
   NYQ: 'NYSE', NYE: 'NYSE', NYB: 'NYSE',
@@ -20,13 +14,33 @@ const YF_EXCHANGE_MAP: Record<string, string> = {
   ASX: 'ASX',
 };
 
-const SUPPORTED_EXCHANGES = new Set(Object.values(YF_EXCHANGE_MAP));
+const inferExchange = (exchangeCode?: string, exchDisp?: string, symbol?: string): string => {
+  const code = (exchangeCode ?? '').toUpperCase();
+  const mappedByCode = YF_EXCHANGE_MAP[code];
+  if (mappedByCode) return mappedByCode;
+
+  const display = (exchDisp ?? '').toUpperCase();
+  if (display.includes('NASDAQ')) return 'NASDAQ';
+  if (display.includes('NYSE')) return 'NYSE';
+  if (display.includes('BOMBAY') || display.includes('BSE')) return 'BSE';
+  if (display.includes('NSE')) return 'NSE';
+  if (display.includes('LONDON') || display.includes('LSE')) return 'LSE';
+  if (display.includes('TOKYO')) return 'TSE';
+  if (display.includes('HONG KONG')) return 'HKEX';
+
+  const sym = (symbol ?? '').toUpperCase();
+  if (sym.endsWith('.NS')) return 'NSE';
+  if (sym.endsWith('.BO')) return 'BSE';
+  if (sym.endsWith('.L')) return 'LSE';
+  if (sym.endsWith('.HK')) return 'HKEX';
+  if (sym.endsWith('.T')) return 'TSE';
+
+  return exchDisp || exchangeCode || 'UNKNOWN';
+};
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const origin = req.headers.origin ?? '';
-  if (ALLOWED_ORIGINS.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  }
+  // Public read-only endpoint used by web clients from multiple origins.
+  res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
@@ -64,16 +78,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const quotes = (data.quotes ?? [])
       .filter(q => q.quoteType === 'EQUITY' || q.quoteType === 'ETF')
       .map(q => {
-        const exchCode = q.exchange ?? '';
-        const mappedExchange = YF_EXCHANGE_MAP[exchCode] ?? null;
+        const mappedExchange = inferExchange(q.exchange, q.exchDisp, q.symbol);
         return {
           symbol: q.symbol,
           name: q.longname ?? q.shortname ?? q.symbol,
           exchange: mappedExchange,
-          exchDisp: q.exchDisp ?? exchCode,
+          exchDisp: q.exchDisp ?? q.exchange ?? mappedExchange,
         };
       })
-      .filter(q => q.exchange && SUPPORTED_EXCHANGES.has(q.exchange))
       .slice(0, 10);
 
     return res.status(200).json({ quotes });
