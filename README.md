@@ -28,7 +28,7 @@ A Bloomberg-terminal-inspired global stock market analytics SPA built with React
 |---------|-------------|
 | **Enterprise Header** | Professional branding banner with live Gainers / Losers / Avg-Change pulse, gradient grid overlay, PRO badge, tagline |
 | **Live Prices** | All 37 stocks update every 5 seconds via a ±random walk simulation |
-| **Ticker Bar** | Scrolling marquee — symbol · exchange badge · company name · price · directional arrow (▲/▼) · % change |
+| **Ticker Bar** | Scrolling marquee — symbol (bold cyan) · exchange badge (cyan outline) · company name (light slate) · price · directional arrow (▲/▼) · % change |
 | **Exchange Filter** | Toggle any of 10 exchanges (NYSE, NASDAQ, LSE, TSE, HKEX, SSE, Euronext, NSE, BSE, ASX) |
 | **Watchlist** | Star stocks; persisted to `localStorage` |
 | **Stock Search** | Autocomplete by symbol or company name |

@@ -30,12 +30,12 @@ const TickerItem: React.FC<{ stock: Stock; update?: PriceUpdate }> = ({ stock, u
         <span className="font-mono text-xs font-bold text-accent-cyan tracking-wide">
           {stock.symbol}
         </span>
-        <span className="text-[8px] font-semibold text-navy-900 bg-slate-500/60 rounded px-1 py-0.5 uppercase tracking-wider leading-none">
+        <span className="text-[8px] font-bold text-accent-cyan/80 bg-accent-cyan/10 border border-accent-cyan/20 rounded px-1 py-0.5 uppercase tracking-wider leading-none">
           {stock.exchange}
         </span>
       </div>
       {/* Company name — short */}
-      <span className="text-[10px] text-slate-500 whitespace-nowrap hidden sm:inline">
+      <span className="text-[10px] text-slate-300 whitespace-nowrap hidden sm:inline">
         {stock.name.split(' ').slice(0, 2).join(' ')}
       </span>
       {/* Price */}
