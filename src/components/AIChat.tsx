@@ -1,7 +1,27 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Send, Bot, ChevronDown, Sparkles, TrendingUp } from 'lucide-react';
+import { Send, Bot, ChevronDown, Sparkles, TrendingUp, Globe, Loader2 } from 'lucide-react';
 import { Stock, isExchangeOpen } from '../data/mockData';
 import { fmt, fmtPct, fmtMktCap } from '../utils/market';
+
+const SEARCH_API = import.meta.env.DEV
+  ? '/api/stock-search'
+  : 'https://global-stock-market-app.vercel.app/api/stock-search';
+
+interface LiveResult {
+  symbol: string;
+  name: string;
+  exchange: string;
+  exchDisp: string;
+}
+
+const normalizeSymbol = (s: string) => s.toUpperCase().split('.')[0];
+
+/** Extract the last contiguous non-space word the user is actively typing */
+const getActiveWord = (text: string, cursorPos: number): string => {
+  const before = text.slice(0, cursorPos);
+  const match = before.match(/(\S+)$/);
+  return match ? match[1] : '';
+};
 
 interface Message {
   id: string;
@@ -60,6 +80,14 @@ export const AIChat: React.FC<Props> = ({ stocks }) => {
   const [loading, setLoading] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [mentionedStock, setMentionedStock] = useState<Stock | null>(null);
+  // Autocomplete state
+  const [, setAcWord] = useState('');
+  const [acLocalResults, setAcLocalResults] = useState<Stock[]>([]);
+  const [acLiveResults, setAcLiveResults] = useState<LiveResult[]>([]);
+  const [acLoading, setAcLoading] = useState(false);
+  const [acOpen, setAcOpen] = useState(false);
+  const acDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Detect stock symbol or name mention as user types
@@ -75,6 +103,67 @@ export const AIChat: React.FC<Props> = ({ stocks }) => {
 
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, loading]);
 
+  // ── Autocomplete word tracking ─────────────────────────────────────────────
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const val = e.target.value;
+    setInput(val);
+    const cursor = e.target.selectionStart ?? val.length;
+    const word = getActiveWord(val, cursor);
+    setAcWord(word);
+    if (word.length < 2) {
+      setAcOpen(false);
+      setAcLocalResults([]);
+      setAcLiveResults([]);
+      if (acDebounceRef.current) clearTimeout(acDebounceRef.current);
+      return;
+    }
+    const q = word.toLowerCase();
+    const local = stocks
+      .filter(s => s.symbol.toLowerCase().includes(q) || s.name.toLowerCase().includes(q))
+      .slice(0, 5);
+    setAcLocalResults(local);
+    setAcOpen(true);
+
+    if (acDebounceRef.current) clearTimeout(acDebounceRef.current);
+    acDebounceRef.current = setTimeout(async () => {
+      setAcLoading(true);
+      try {
+        const res = await fetch(`${SEARCH_API}?q=${encodeURIComponent(word)}`);
+        if (res.ok) {
+          const data = await res.json() as { quotes?: LiveResult[] };
+          const localSymbols = new Set(stocks.map(s => normalizeSymbol(s.symbol)));
+          setAcLiveResults((data.quotes ?? []).filter(r => !localSymbols.has(normalizeSymbol(r.symbol))));
+        }
+      } catch { /* ignore */ } finally {
+        setAcLoading(false);
+      }
+    }, 350);
+  };
+
+  /** Replace the active word with the chosen symbol in the textarea */
+  const selectAcResult = (symbol: string) => {
+    const ta = textareaRef.current;
+    const cursor = ta?.selectionStart ?? input.length;
+    const before = input.slice(0, cursor);
+    const after = input.slice(cursor);
+    const replaced = before.replace(/(\S+)$/, symbol);
+    const newVal = replaced + (after.startsWith(' ') ? after : ' ' + after);
+    setInput(newVal);
+    setAcOpen(false);
+    setAcLocalResults([]);
+    setAcLiveResults([]);
+    setAcWord('');
+    // Restore focus to textarea
+    setTimeout(() => {
+      if (ta) {
+        ta.focus();
+        const pos = replaced.length + 1;
+        ta.setSelectionRange(pos, pos);
+      }
+    }, 0);
+  };
+
+
   const sendMessage = useCallback(async (text: string) => {
     if (!text.trim() || loading) return;
     // If user types just a symbol/short name alone, promote to deep-dive analysis
@@ -88,6 +177,10 @@ export const AIChat: React.FC<Props> = ({ stocks }) => {
     setMessages(prev => [...prev, userMsg]);
     setInput('');
     setMentionedStock(null);
+    setAcOpen(false);
+    setAcLocalResults([]);
+    setAcLiveResults([]);
+    setAcWord('');
     setLoading(true);
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 15000); // 15s — well within Vercel 10s but retried client-side if needed
@@ -132,11 +225,16 @@ export const AIChat: React.FC<Props> = ({ stocks }) => {
   const analyzeStock = useCallback((stock: Stock) => {
     setInput('');
     setMentionedStock(null);
+    setAcOpen(false);
+    setAcLocalResults([]);
+    setAcLiveResults([]);
+    setAcWord('');
     sendMessage(`Give me a full detailed analysis of ${stock.symbol} (${stock.name})`);
   }, [sendMessage]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(input); }
+    if (e.key === 'Escape') { setAcOpen(false); }
   };
 
   const renderContent = (text: string) => text.split('\n').map((line, i) => {
@@ -254,14 +352,74 @@ export const AIChat: React.FC<Props> = ({ stocks }) => {
                 </div>
               </div>
             )}
-            <div className="flex gap-2">
-              <textarea value={input} onChange={e => setInput(e.target.value)} onKeyDown={handleKeyDown} placeholder="Ask about markets…" rows={2}
-                className="flex-1 bg-navy-800 border border-navy-700/50 rounded-lg px-3 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-accent-cyan/40 focus:ring-1 focus:ring-accent-cyan/15 resize-none transition-colors"
-              />
-              <button onClick={() => sendMessage(input)} disabled={!input.trim() || loading}
-                className={`p-2 rounded-lg border transition-colors self-end ${input.trim() && !loading ? 'bg-accent-cyan/10 border-accent-cyan/30 text-accent-cyan hover:bg-accent-cyan/20' : 'border-navy-700/40 text-slate-600 cursor-not-allowed'}`}>
-                <Send className="w-4 h-4" />
-              </button>
+
+            {/* Autocomplete dropdown — rendered above for visual alignment */}
+            <div className="relative">
+              {acOpen && (acLocalResults.length > 0 || acLiveResults.length > 0 || acLoading) && (
+                <div className="absolute bottom-full mb-1 left-0 right-0 z-30 bg-surface-2 border border-navy-700/60 rounded-lg shadow-xl overflow-hidden max-h-60 overflow-y-auto">
+                  {/* Local results */}
+                  {acLocalResults.length > 0 && (
+                    <>
+                      <div className="px-3 pt-1.5 pb-0.5 text-[9px] text-slate-500 uppercase tracking-wider">Local</div>
+                      {acLocalResults.map(s => (
+                        <button
+                          key={s.symbol}
+                          onMouseDown={e => { e.preventDefault(); selectAcResult(s.symbol); }}
+                          className="w-full flex items-center justify-between px-3 py-1.5 hover:bg-navy-700/50 transition-colors text-left"
+                        >
+                          <span className="flex items-center gap-1.5 min-w-0">
+                            <span className="font-mono text-xs text-accent-cyan font-semibold flex-shrink-0">{s.symbol}</span>
+                            <span className="text-[10px] text-slate-400 truncate">{s.name}</span>
+                          </span>
+                          <span className="text-[9px] text-slate-500 flex-shrink-0 ml-1">{s.exchange}</span>
+                        </button>
+                      ))}
+                    </>
+                  )}
+
+                  {/* Live results from exchanges */}
+                  {(acLiveResults.length > 0 || acLoading) && (
+                    <>
+                      <div className="border-t border-navy-700/50 mx-2 mt-0.5" />
+                      <div className="px-3 pt-1.5 pb-0.5 flex items-center gap-1">
+                        <Globe className="w-2.5 h-2.5 text-slate-500" />
+                        <span className="text-[9px] text-slate-500 uppercase tracking-wider">Live from exchanges</span>
+                        {acLoading && <Loader2 className="w-2.5 h-2.5 text-slate-600 animate-spin ml-1" />}
+                      </div>
+                      {acLiveResults.slice(0, 5).map(r => (
+                        <button
+                          key={r.symbol}
+                          onMouseDown={e => { e.preventDefault(); selectAcResult(r.symbol); }}
+                          className="w-full flex items-center justify-between px-3 py-1.5 hover:bg-navy-700/50 transition-colors text-left"
+                        >
+                          <span className="flex items-center gap-1.5 min-w-0">
+                            <span className="font-mono text-xs text-accent-cyan font-semibold flex-shrink-0">{r.symbol}</span>
+                            <span className="text-[10px] text-slate-400 truncate">{r.name}</span>
+                          </span>
+                          <span className="text-[9px] text-slate-500 flex-shrink-0 ml-1">{r.exchDisp}</span>
+                        </button>
+                      ))}
+                    </>
+                  )}
+                </div>
+              )}
+
+              <div className="flex gap-2">
+                <textarea
+                  ref={textareaRef}
+                  value={input}
+                  onChange={handleInputChange}
+                  onKeyDown={handleKeyDown}
+                  onBlur={() => setTimeout(() => setAcOpen(false), 150)}
+                  placeholder="Ask about markets… or type a stock symbol"
+                  rows={2}
+                  className="flex-1 bg-navy-800 border border-navy-700/50 rounded-lg px-3 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-accent-cyan/40 focus:ring-1 focus:ring-accent-cyan/15 resize-none transition-colors"
+                />
+                <button onClick={() => sendMessage(input)} disabled={!input.trim() || loading}
+                  className={`p-2 rounded-lg border transition-colors self-end ${input.trim() && !loading ? 'bg-accent-cyan/10 border-accent-cyan/30 text-accent-cyan hover:bg-accent-cyan/20' : 'border-navy-700/40 text-slate-600 cursor-not-allowed'}`}>
+                  <Send className="w-4 h-4" />
+                </button>
+              </div>
             </div>
             <p className="text-[9px] text-slate-600 mt-1 text-center">Shift+Enter for new line · Enter to send</p>
           </div>
