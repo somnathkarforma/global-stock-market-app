@@ -3,7 +3,6 @@
   "outputDirectory": "dist",
   "framework": "vite",
   "functions": {
-    "api/chat.ts": { "runtime": "edge" },
     "api/stock-search.ts": { "maxDuration": 15 },
     "api/stock-quote.ts": { "maxDuration": 15 }
   },
