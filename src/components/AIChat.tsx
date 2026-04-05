@@ -25,19 +25,17 @@ const SUGGESTIONS = [
 ];
 
 const buildSystemPrompt = (stocks: Stock[]): string => {
-  const topStocks = stocks.slice(0, 15).map(s =>
+  const allStocks = stocks.map(s =>
     `${s.symbol} (${s.name}, ${s.exchange}): price=${fmt(s.price, s.currency)}, change=${fmtPct(s.changePercent)}, PE=${s.fundamentals.peRatio}, marketCap=${fmtMktCap(s.fundamentals.marketCap, s.currency)}, sector=${s.sector}`
   ).join('\n');
 
   return `You are StockSense AI, a Bloomberg-style market intelligence assistant. You analyze stocks, market trends, and financial data. Be concise, data-driven, and professional—like a Wall Street analyst.
 
-Current market data snapshot (first ${stocks.slice(0, 15).length} stocks):
-${topStocks}
-
-Total stocks in database: ${stocks.length} across NYSE, NASDAQ, LSE, TSE, HKEX, SSE, Euronext, NSE, BSE, ASX.
+Current live market data for ALL ${stocks.length} stocks:
+${allStocks}
 
 Guidelines:
-- Cite specific numbers when available
+- Always cite the exact live prices and data from above when asked about any stock
 - Format prices with currency symbols
 - Use bullet points for lists
 - Keep responses focused and under 200 words unless asked for detail
@@ -52,7 +50,19 @@ export const AIChat: React.FC<Props> = ({ stocks }) => {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [mentionedStock, setMentionedStock] = useState<Stock | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Detect stock symbol or name mention as user types
+  useEffect(() => {
+    if (!input.trim()) { setMentionedStock(null); return; }
+    const q = input.toLowerCase();
+    const found = stocks.find(s =>
+      q.includes(s.symbol.toLowerCase()) ||
+      q.includes(s.name.toLowerCase().split(' ').slice(0, 2).join(' '))
+    );
+    setMentionedStock(found ?? null);
+  }, [input, stocks]);
 
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, loading]);
 
@@ -153,6 +163,23 @@ export const AIChat: React.FC<Props> = ({ stocks }) => {
           )}
 
           <div className="p-3 border-t border-navy-700/40">
+            {mentionedStock && (
+              <div className="mb-2 px-3 py-2 rounded-lg bg-navy-900/80 border border-accent-cyan/20 flex items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <span className="text-[10px] font-mono font-bold text-accent-cyan">{mentionedStock.symbol}</span>
+                  <span className="text-[10px] text-slate-400 ml-1.5 truncate">{mentionedStock.name}</span>
+                  <span className="text-[9px] text-slate-600 ml-1">· {mentionedStock.exchange}</span>
+                </div>
+                <div className="flex-shrink-0 text-right">
+                  <p className={`text-xs font-mono font-semibold ${mentionedStock.changePercent >= 0 ? 'text-accent-green' : 'text-accent-red'}`}>
+                    {fmt(mentionedStock.price, mentionedStock.currency)}
+                  </p>
+                  <p className={`text-[9px] font-mono ${mentionedStock.changePercent >= 0 ? 'text-accent-green' : 'text-accent-red'}`}>
+                    {mentionedStock.changePercent >= 0 ? '+' : ''}{fmtPct(mentionedStock.changePercent)}
+                  </p>
+                </div>
+              </div>
+            )}
             <div className="flex gap-2">
               <textarea value={input} onChange={e => setInput(e.target.value)} onKeyDown={handleKeyDown} placeholder="Ask about markets…" rows={2}
                 className="flex-1 bg-navy-800 border border-navy-700/50 rounded-lg px-3 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-accent-cyan/40 focus:ring-1 focus:ring-accent-cyan/15 resize-none transition-colors"
