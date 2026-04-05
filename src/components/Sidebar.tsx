@@ -20,6 +20,47 @@ interface LiveResult {
 
 const normalizeSymbol = (symbol: string): string => symbol.toUpperCase().split('.')[0];
 
+const exchangeToCurrency = (exchange: string): Stock['currency'] => {
+  if (exchange === 'NSE' || exchange === 'BSE') return 'INR';
+  if (exchange === 'LSE') return 'GBP';
+  if (exchange === 'TSE') return 'JPY';
+  if (exchange === 'HKEX') return 'HKD';
+  if (exchange === 'SSE') return 'CNY';
+  if (exchange === 'Euronext') return 'EUR';
+  if (exchange === 'ASX') return 'AUD';
+  return 'USD';
+};
+
+const buildFallbackLiveStock = (result: LiveResult): Stock => ({
+  symbol: result.symbol.toUpperCase(),
+  name: result.name,
+  exchange: (result.exchange || 'NYSE') as Stock['exchange'],
+  currency: exchangeToCurrency(result.exchange),
+  sector: 'Technology',
+  price: 0,
+  previousClose: 0,
+  change: 0,
+  changePercent: 0,
+  volume: 0,
+  avgVolume: 0,
+  fundamentals: {
+    peRatio: 0,
+    eps: 0,
+    marketCap: 0,
+    high52w: 0,
+    low52w: 0,
+    dividendYield: 0,
+    beta: 1,
+    roe: 0,
+    analystTarget: 0,
+    forwardPE: 0,
+    revenueGrowth: 0,
+    profitMargin: 0,
+  },
+  description: `${result.name} — basic live profile shown because quote data is temporarily unavailable.`,
+  isLive: true,
+});
+
 interface Props {
   stocks: Stock[];
   selectedExchanges: string[];
@@ -99,18 +140,24 @@ export const Sidebar: React.FC<Props> = ({
     try {
       const res = await fetch(`${QUOTE_API}?symbol=${encodeURIComponent(result.symbol)}`);
       if (!res.ok) {
-        setLiveSelectError(`Could not load quote for ${result.symbol}. Please try again.`);
+        onSelectStock(buildFallbackLiveStock(result));
+        setLiveSelectError(`Live quote unavailable for ${result.symbol}. Showing basic profile.`);
+        setQuery('');
         return;
       }
       const data = await res.json() as { quote?: Stock };
       if (!data.quote) {
-        setLiveSelectError(`Could not load quote for ${result.symbol}. Please try again.`);
+        onSelectStock(buildFallbackLiveStock(result));
+        setLiveSelectError(`Live quote unavailable for ${result.symbol}. Showing basic profile.`);
+        setQuery('');
         return;
       }
       onSelectStock(data.quote);
       setQuery('');
     } catch {
-      setLiveSelectError(`Could not load quote for ${result.symbol}. Please try again.`);
+      onSelectStock(buildFallbackLiveStock(result));
+      setLiveSelectError(`Live quote unavailable for ${result.symbol}. Showing basic profile.`);
+      setQuery('');
     } finally {
       setSelectingSymbol(null);
     }
