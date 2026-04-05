@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Send, Bot, ChevronDown, Sparkles, AlertTriangle } from 'lucide-react';
+import { Send, Bot, ChevronDown, Sparkles } from 'lucide-react';
 import { Stock } from '../data/mockData';
 import { fmt, fmtPct, fmtMktCap } from '../utils/market';
 
@@ -13,7 +13,7 @@ interface Props {
   stocks: Stock[];
 }
 
-const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY ?? '';
+const PROXY_URL = 'https://global-stock-market-app.vercel.app/api/chat';
 
 const SUGGESTIONS = [
   'Which stocks have the highest dividend yield?',
@@ -44,23 +44,7 @@ Guidelines:
 - Never give actual financial advice; always note this is for educational purposes`;
 };
 
-const KeySetup: React.FC = () => (
-  <div className="flex-1 flex flex-col items-center justify-center p-4 text-center">
-    <div className="w-10 h-10 rounded-xl bg-accent-red/10 border border-accent-red/20 flex items-center justify-center mb-3">
-      <AlertTriangle className="w-5 h-5 text-accent-red" />
-    </div>
-    <p className="text-xs font-semibold text-slate-200 mb-1">AI Unavailable</p>
-    <p className="text-[10px] text-slate-500 leading-relaxed">
-      The <span className="text-accent-cyan font-mono">VITE_GROQ_API_KEY</span> build variable is not set.
-      <br />
-      Add it to your repository secrets and redeploy.
-    </p>
-  </div>
-);
-
 export const AIChat: React.FC<Props> = ({ stocks }) => {
-  const groqKey = GROQ_API_KEY;
-
   const [messages, setMessages] = useState<Message[]>([{
     id: 'welcome', role: 'assistant',
     content: "Hello! I'm **StockSense AI**, your Bloomberg-style market assistant.\n\nI have live data on **" + stocks.length + ' global stocks** across 10 exchanges. Ask me about market trends, compare stocks, or explore fundamentals.',
@@ -73,25 +57,24 @@ export const AIChat: React.FC<Props> = ({ stocks }) => {
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, loading]);
 
   const sendMessage = useCallback(async (text: string) => {
-    if (!text.trim() || loading || !groqKey) return;
+    if (!text.trim() || loading) return;
     const userMsg: Message = { id: Date.now().toString(), role: 'user', content: text };
     setMessages(prev => [...prev, userMsg]);
     setInput('');
     setLoading(true);
     try {
       const history = [...messages, userMsg].filter(m => m.id !== 'welcome');
-      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      const response = await fetch(PROXY_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${groqKey}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile',
-          max_tokens: 512,
           messages: [{ role: 'system', content: buildSystemPrompt(stocks) }, ...history.map(m => ({ role: m.role, content: m.content }))],
         }),
       });
       if (!response.ok) {
-        const err = await response.json().catch(() => ({})) as { error?: { message?: string } };
-        throw new Error(err.error?.message || `API error ${response.status}`);
+        const err = await response.json().catch(() => ({})) as { error?: { message?: string } | string };
+        const msg = typeof err.error === 'object' ? err.error?.message : err.error;
+        throw new Error(msg || `API error ${response.status}`);
       }
       const data = await response.json() as { choices: Array<{ message: { content: string } }> };
       const assistantText = data.choices?.[0]?.message?.content || 'No response.';
@@ -102,7 +85,7 @@ export const AIChat: React.FC<Props> = ({ stocks }) => {
     } finally {
       setLoading(false);
     }
-  }, [messages, stocks, loading, groqKey]);
+  }, [messages, stocks, loading]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(input); }
@@ -140,51 +123,47 @@ export const AIChat: React.FC<Props> = ({ stocks }) => {
 
       {!isCollapsed && (
         <>
-          {!groqKey ? <KeySetup /> : (
-            <>
-              <div className="flex-1 overflow-y-auto p-3 space-y-3 min-h-0">
-                {messages.map(msg => (
-                  <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[85%] rounded-xl px-3 py-2.5 text-xs leading-relaxed ${msg.role === 'user' ? 'bg-accent-cyan/10 border border-accent-cyan/20 text-slate-200 rounded-br-sm' : 'bg-navy-900/60 border border-navy-700/30 text-slate-300 rounded-bl-sm'}`}>
-                      {msg.role === 'assistant' ? <div className="space-y-0.5">{renderContent(msg.content)}</div> : <p>{msg.content}</p>}
-                    </div>
-                  </div>
+          <div className="flex-1 overflow-y-auto p-3 space-y-3 min-h-0">
+            {messages.map(msg => (
+              <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div className={`max-w-[85%] rounded-xl px-3 py-2.5 text-xs leading-relaxed ${msg.role === 'user' ? 'bg-accent-cyan/10 border border-accent-cyan/20 text-slate-200 rounded-br-sm' : 'bg-navy-900/60 border border-navy-700/30 text-slate-300 rounded-bl-sm'}`}>
+                  {msg.role === 'assistant' ? <div className="space-y-0.5">{renderContent(msg.content)}</div> : <p>{msg.content}</p>}
+                </div>
+              </div>
+            ))}
+            {loading && (
+              <div className="flex justify-start">
+                <div className="bg-navy-900/60 border border-navy-700/30 rounded-xl rounded-bl-sm px-3 py-3">
+                  <div className="flex gap-1 items-center"><span className="typing-dot" /><span className="typing-dot" /><span className="typing-dot" /></div>
+                </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+
+          {messages.length <= 1 && (
+            <div className="px-3 pb-2">
+              <p className="text-[9px] text-slate-600 uppercase tracking-wider mb-1.5">Suggested</p>
+              <div className="flex flex-col gap-1">
+                {SUGGESTIONS.slice(0, 4).map(s => (
+                  <button key={s} onClick={() => sendMessage(s)} className="text-left text-[10px] text-slate-400 hover:text-accent-cyan bg-navy-900/40 hover:bg-navy-700/40 border border-navy-700/30 rounded-lg px-2 py-1.5 transition-colors leading-snug">{s}</button>
                 ))}
-                {loading && (
-                  <div className="flex justify-start">
-                    <div className="bg-navy-900/60 border border-navy-700/30 rounded-xl rounded-bl-sm px-3 py-3">
-                      <div className="flex gap-1 items-center"><span className="typing-dot" /><span className="typing-dot" /><span className="typing-dot" /></div>
-                    </div>
-                  </div>
-                )}
-                <div ref={messagesEndRef} />
               </div>
-
-              {messages.length <= 1 && (
-                <div className="px-3 pb-2">
-                  <p className="text-[9px] text-slate-600 uppercase tracking-wider mb-1.5">Suggested</p>
-                  <div className="flex flex-col gap-1">
-                    {SUGGESTIONS.slice(0, 4).map(s => (
-                      <button key={s} onClick={() => sendMessage(s)} className="text-left text-[10px] text-slate-400 hover:text-accent-cyan bg-navy-900/40 hover:bg-navy-700/40 border border-navy-700/30 rounded-lg px-2 py-1.5 transition-colors leading-snug">{s}</button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div className="p-3 border-t border-navy-700/40">
-                <div className="flex gap-2">
-                  <textarea value={input} onChange={e => setInput(e.target.value)} onKeyDown={handleKeyDown} placeholder="Ask about markets…" rows={2}
-                    className="flex-1 bg-navy-800 border border-navy-700/50 rounded-lg px-3 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-accent-cyan/40 focus:ring-1 focus:ring-accent-cyan/15 resize-none transition-colors"
-                  />
-                  <button onClick={() => sendMessage(input)} disabled={!input.trim() || loading}
-                    className={`p-2 rounded-lg border transition-colors self-end ${input.trim() && !loading ? 'bg-accent-cyan/10 border-accent-cyan/30 text-accent-cyan hover:bg-accent-cyan/20' : 'border-navy-700/40 text-slate-600 cursor-not-allowed'}`}>
-                    <Send className="w-4 h-4" />
-                  </button>
-                </div>
-                <p className="text-[9px] text-slate-600 mt-1 text-center">Shift+Enter for new line · Enter to send</p>
-              </div>
-            </>
+            </div>
           )}
+
+          <div className="p-3 border-t border-navy-700/40">
+            <div className="flex gap-2">
+              <textarea value={input} onChange={e => setInput(e.target.value)} onKeyDown={handleKeyDown} placeholder="Ask about markets…" rows={2}
+                className="flex-1 bg-navy-800 border border-navy-700/50 rounded-lg px-3 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-accent-cyan/40 focus:ring-1 focus:ring-accent-cyan/15 resize-none transition-colors"
+              />
+              <button onClick={() => sendMessage(input)} disabled={!input.trim() || loading}
+                className={`p-2 rounded-lg border transition-colors self-end ${input.trim() && !loading ? 'bg-accent-cyan/10 border-accent-cyan/30 text-accent-cyan hover:bg-accent-cyan/20' : 'border-navy-700/40 text-slate-600 cursor-not-allowed'}`}>
+                <Send className="w-4 h-4" />
+              </button>
+            </div>
+            <p className="text-[9px] text-slate-600 mt-1 text-center">Shift+Enter for new line · Enter to send</p>
+          </div>
         </>
       )}
     </div>

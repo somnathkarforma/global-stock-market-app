@@ -27,7 +27,6 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          VITE_GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           VITE_BASE_PATH: /global-stock-market-app/
 
       - name: Deploy to GitHub Pages
