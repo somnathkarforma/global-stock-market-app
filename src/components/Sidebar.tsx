@@ -45,6 +45,7 @@ export const Sidebar: React.FC<Props> = ({
   const [showSearch, setShowSearch] = useState(false);
   const [liveResults, setLiveResults] = useState<LiveResult[]>([]);
   const [liveLoading, setLiveLoading] = useState(false);
+  const [liveError, setLiveError] = useState<string | null>(null);
   const [selectingSymbol, setSelectingSymbol] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -60,20 +61,29 @@ export const Sidebar: React.FC<Props> = ({
   // Debounced live search
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    if (!query.trim() || query.trim().length < 2) { setLiveResults([]); return; }
+    if (!query.trim() || query.trim().length < 2) {
+      setLiveResults([]);
+      setLiveError(null);
+      return;
+    }
     debounceRef.current = setTimeout(async () => {
       setLiveLoading(true);
+      setLiveError(null);
       try {
         const res = await fetch(`${SEARCH_API}?q=${encodeURIComponent(query.trim())}`);
-        if (res.ok) {
-          const data = await res.json() as { quotes?: LiveResult[]; result?: LiveResult[] };
-          const localSymbols = new Set(stocks.map(s => normalizeSymbol(s.symbol)));
-          const incoming = (Array.isArray(data.quotes) ? data.quotes : data.result) ?? [];
-          // Only show live results not already in mock data
-          setLiveResults(incoming.filter(q => !localSymbols.has(normalizeSymbol(q.symbol))));
+        if (!res.ok) {
+          setLiveResults([]);
+          setLiveError('Live exchange search is temporarily unavailable.');
+          return;
         }
+        const data = await res.json() as { quotes?: LiveResult[]; result?: LiveResult[] };
+        const localSymbols = new Set(stocks.map(s => normalizeSymbol(s.symbol)));
+        const incoming = (Array.isArray(data.quotes) ? data.quotes : data.result) ?? [];
+        // Only show live results not already in mock data
+        setLiveResults(incoming.filter(q => !localSymbols.has(normalizeSymbol(q.symbol))));
       } catch {
-        // silently fail — local results still shown
+        setLiveResults([]);
+        setLiveError('Live exchange search is temporarily unavailable.');
       } finally {
         setLiveLoading(false);
       }
@@ -173,6 +183,14 @@ export const Sidebar: React.FC<Props> = ({
               <div className="px-3 py-3 flex items-center gap-2 text-slate-500">
                 <Loader2 className="w-3 h-3 animate-spin" />
                 <span className="text-xs">Searching exchanges…</span>
+              </div>
+            )}
+
+            {/* Live search error hint */}
+            {!liveLoading && liveError && (
+              <div className="px-3 py-2 border-t border-navy-700/40 bg-accent-amber/5">
+                <p className="text-[10px] text-accent-amber">{liveError}</p>
+                <p className="text-[9px] text-slate-500 mt-0.5">Showing local matches only.</p>
               </div>
             )}
 
