@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { BarChart2, Globe, RefreshCw, TrendingUp, TrendingDown, Activity } from 'lucide-react';
-import { STOCKS, TICKER_BAR_SYMBOLS, Stock } from './data/mockData';
+import { STOCKS, TICKER_BAR_SYMBOLS, Stock, EXCHANGES, isExchangeOpen } from './data/mockData';
 import { useLivePrices } from './hooks/useLivePrices';
 import { useWatchlist } from './hooks/useWatchlist';
 import { TickerBar } from './components/TickerBar';
@@ -188,6 +188,29 @@ export default function App() {
                     {filteredStocks.length} stocks · prices update every 5s
                   </p>
                 </div>
+                {/* Market open/closed badges for selected exchanges */}
+                {selectedExchanges.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 justify-end">
+                    {selectedExchanges.map(exName => {
+                      const ex = EXCHANGES.find(e => e.name === exName);
+                      const open = isExchangeOpen(exName as any);
+                      return (
+                        <div key={exName} className="flex items-center gap-1 px-2 py-1 rounded-lg border bg-navy-900/60 border-navy-700/40">
+                          <span className="text-xs">{ex?.flag}</span>
+                          <span className="font-mono text-[10px] text-slate-300 font-semibold">{exName}</span>
+                          <span className={`flex items-center gap-0.5 text-[9px] font-bold ml-1 ${
+                            open ? 'text-accent-green' : 'text-slate-500'
+                          }`}>
+                            <span className={`inline-block w-1.5 h-1.5 rounded-full ${
+                              open ? 'bg-accent-green animate-pulse' : 'bg-slate-600'
+                            }`} />
+                            {open ? 'OPEN' : 'CLOSED'}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
               <StockGrid
                 stocks={filteredStocks}

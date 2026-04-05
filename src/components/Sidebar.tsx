@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Search, Star, StarOff, X, TrendingUp } from 'lucide-react';
-import { Stock, EXCHANGES } from '../data/mockData';
+import { Stock, EXCHANGES, isExchangeOpen } from '../data/mockData';
 import { fmt, fmtPct, changeColor } from '../utils/market';
 
 interface Props {
@@ -116,17 +116,21 @@ export const Sidebar: React.FC<Props> = ({
           <div className="flex flex-wrap gap-1">
             {EXCHANGES.map(ex => {
               const active = selectedExchanges.includes(ex.name);
+              const open = isExchangeOpen(ex.name as any);
               return (
                 <button
                   key={ex.name}
                   onClick={() => onToggleExchange(ex.name)}
-                  title={ex.label}
-                  className={`px-2 py-0.5 rounded text-[10px] font-mono font-semibold border transition-all ${
+                  title={`${ex.label} — ${open ? 'OPEN' : 'CLOSED'}`}
+                  className={`flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-semibold border transition-all ${
                     active
                       ? 'bg-accent-cyan/10 text-accent-cyan border-accent-cyan/30'
                       : 'text-slate-500 border-navy-700/50 hover:text-slate-300 hover:border-slate-500/40'
                   }`}
                 >
+                  <span className={`inline-block w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+                    open ? 'bg-accent-green animate-pulse' : 'bg-slate-600'
+                  }`} />
                   {ex.flag} {ex.name}
                 </button>
               );

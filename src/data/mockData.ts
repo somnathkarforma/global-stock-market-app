@@ -388,6 +388,36 @@ const raw: RawStock[] = [
     fundamentals: { peRatio: 45.2, eps: 230.5, marketCap: 14100, high52w: 12200.0, low52w: 7240.0, dividendYield: 0.60, beta: 1.42, roe: 5.1, analystTarget: 12000.0, forwardPE: 38.0, revenueGrowth: 14.1, profitMargin: 7.3 },
     description: 'SoftBank is a global technology conglomerate and major investor in AI and tech startups.',
   },
+  {
+    symbol: '6501', name: 'Hitachi Ltd.', exchange: 'TSE', currency: 'JPY', sector: 'Industrial',
+    price: 15480.0, previousClose: 15280.0, volume: 3_200_000, avgVolume: 3_800_000,
+    fundamentals: { peRatio: 24.8, eps: 624.0, marketCap: 8240, high52w: 17480.0, low52w: 10280.0, dividendYield: 0.82, beta: 1.08, roe: 14.8, analystTarget: 17000.0, forwardPE: 20.4, revenueGrowth: 12.4, profitMargin: 8.4 },
+    description: 'Hitachi is a global social innovation business leader in digital, green, and innovation solutions.',
+  },
+  {
+    symbol: '7974', name: 'Nintendo Co. Ltd.', exchange: 'TSE', currency: 'JPY', sector: 'Technology',
+    price: 8420.0, previousClose: 8324.0, volume: 2_800_000, avgVolume: 3_200_000,
+    fundamentals: { peRatio: 18.4, eps: 457.6, marketCap: 10940, high52w: 11450.0, low52w: 6480.0, dividendYield: 2.14, beta: 0.64, roe: 18.4, analystTarget: 9800.0, forwardPE: 16.8, revenueGrowth: -1.4, profitMargin: 32.8 },
+    description: 'Nintendo is the iconic Japanese game company behind Switch, Mario, Zelda, and Pokemon franchises.',
+  },
+  {
+    symbol: '8306', name: 'Mitsubishi UFJ Financial', exchange: 'TSE', currency: 'JPY', sector: 'Finance',
+    price: 1482.0, previousClose: 1464.0, volume: 42_000_000, avgVolume: 48_000_000,
+    fundamentals: { peRatio: 9.8, eps: 151.2, marketCap: 19800, high52w: 1756.0, low52w: 960.0, dividendYield: 2.68, beta: 1.04, roe: 8.4, analystTarget: 1800.0, forwardPE: 8.8, revenueGrowth: 14.4, profitMargin: 22.4 },
+    description: 'Mitsubishi UFJ Financial Group is Japan\'s and the world\'s second-largest bank by assets.',
+  },
+  {
+    symbol: '6367', name: 'Daikin Industries', exchange: 'TSE', currency: 'JPY', sector: 'Industrial',
+    price: 18240.0, previousClose: 18020.0, volume: 1_200_000, avgVolume: 1_450_000,
+    fundamentals: { peRatio: 32.4, eps: 563.0, marketCap: 5340, high52w: 22400.0, low52w: 14800.0, dividendYield: 1.14, beta: 1.02, roe: 12.4, analystTarget: 21000.0, forwardPE: 26.4, revenueGrowth: 8.4, profitMargin: 9.8 },
+    description: 'Daikin Industries is the world\'s largest air conditioning manufacturer with global R&D leadership.',
+  },
+  {
+    symbol: '4519', name: 'Chugai Pharmaceutical', exchange: 'TSE', currency: 'JPY', sector: 'Healthcare',
+    price: 6240.0, previousClose: 6184.0, volume: 2_400_000, avgVolume: 2_800_000,
+    fundamentals: { peRatio: 38.4, eps: 162.5, marketCap: 9984, high52w: 7620.0, low52w: 4840.0, dividendYield: 1.28, beta: 0.68, roe: 22.4, analystTarget: 7200.0, forwardPE: 30.4, revenueGrowth: 9.8, profitMargin: 24.4 },
+    description: 'Chugai Pharmaceutical is Japan\'s leading biotech company, a majority-owned Roche subsidiary.',
+  },
   // ── HKEX ─────────────────────────────────────────────────────────────────
   {
     symbol: '0700', name: 'Tencent Holdings', exchange: 'HKEX', currency: 'HKD', sector: 'Technology',
@@ -406,6 +436,30 @@ const raw: RawStock[] = [
     price: 52.35, previousClose: 51.80, volume: 22_400_000, avgVolume: 26_800_000,
     fundamentals: { peRatio: 16.2, eps: 3.23, marketCap: 624, high52w: 62.20, low52w: 45.70, dividendYield: 2.94, beta: 0.82, roe: 11.8, analystTarget: 65.0, forwardPE: 14.5, revenueGrowth: 7.2, profitMargin: 22.1 },
     description: 'AIA is the largest independent publicly listed pan-Asian life insurance group.',
+  },
+  {
+    symbol: '3690', name: 'Meituan', exchange: 'HKEX', currency: 'HKD', sector: 'Consumer',
+    price: 148.20, previousClose: 146.40, volume: 24_200_000, avgVolume: 28_400_000,
+    fundamentals: { peRatio: 22.4, eps: 6.61, marketCap: 918, high52w: 184.80, low52w: 92.60, dividendYield: 0.0, beta: 1.28, roe: 18.4, analystTarget: 178.0, forwardPE: 18.2, revenueGrowth: 24.4, profitMargin: 9.8 },
+    description: 'Meituan is China\'s dominant food delivery and local services super-platform.',
+  },
+  {
+    symbol: '2318', name: 'Ping An Insurance HK', exchange: 'HKEX', currency: 'HKD', sector: 'Finance',
+    price: 38.95, previousClose: 38.45, volume: 36_000_000, avgVolume: 42_000_000,
+    fundamentals: { peRatio: 7.8, eps: 4.99, marketCap: 706, high52w: 46.20, low52w: 28.90, dividendYield: 6.84, beta: 0.92, roe: 12.8, analystTarget: 48.0, forwardPE: 7.2, revenueGrowth: 3.8, profitMargin: 18.4 },
+    description: 'Ping An Insurance (H share) is China\'s largest insurer listed in Hong Kong.',
+  },
+  {
+    symbol: '1211', name: 'BYD Company Ltd.', exchange: 'HKEX', currency: 'HKD', sector: 'Consumer',
+    price: 284.40, previousClose: 280.60, volume: 14_800_000, avgVolume: 17_200_000,
+    fundamentals: { peRatio: 22.8, eps: 12.47, marketCap: 822, high52w: 342.80, low52w: 192.40, dividendYield: 0.84, beta: 1.24, roe: 18.4, analystTarget: 340.0, forwardPE: 18.4, revenueGrowth: 34.4, profitMargin: 6.8 },
+    description: 'BYD is China\'s largest EV maker and the world\'s top-selling electric vehicle brand.',
+  },
+  {
+    symbol: '0005', name: 'HSBC Holdings (HK)', exchange: 'HKEX', currency: 'HKD', sector: 'Finance',
+    price: 82.40, previousClose: 81.60, volume: 28_400_000, avgVolume: 32_800_000,
+    fundamentals: { peRatio: 9.8, eps: 8.41, marketCap: 1560, high52w: 94.20, low52w: 60.80, dividendYield: 6.82, beta: 0.84, roe: 11.8, analystTarget: 96.0, forwardPE: 8.8, revenueGrowth: 8.4, profitMargin: 38.4 },
+    description: 'HSBC Holdings is one of the world\'s largest banking and financial services organisations.',
   },
   // ── Euronext ─────────────────────────────────────────────────────────────
   {
@@ -426,7 +480,7 @@ const raw: RawStock[] = [
     fundamentals: { peRatio: 14.8, eps: 6.03, marketCap: 113, high52w: 102.40, low52w: 78.80, dividendYield: 4.15, beta: 0.68, roe: 14.3, analystTarget: 105.0, forwardPE: 13.2, revenueGrowth: 4.3, profitMargin: 14.8 },
     description: 'Sanofi is a global biopharmaceutical leader in vaccines, rare diseases and immunology.',
   },
-  // ── NSE / BSE ─────────────────────────────────────────────────────────────
+  // ── NSE ───────────────────────────────────────────────────────────────────
   {
     symbol: 'RELIANCE', name: 'Reliance Industries', exchange: 'NSE', currency: 'INR', sector: 'Energy',
     price: 2984.75, previousClose: 2961.30, volume: 18_900_000, avgVolume: 21_400_000,
@@ -440,16 +494,173 @@ const raw: RawStock[] = [
     description: 'TCS is one of the world\'s largest IT services companies operating in 55+ countries.',
   },
   {
-    symbol: 'HDFCBANK', name: 'HDFC Bank Ltd.', exchange: 'BSE', currency: 'INR', sector: 'Finance',
+    symbol: 'HDFCBANK', name: 'HDFC Bank Ltd.', exchange: 'NSE', currency: 'INR', sector: 'Finance',
     price: 1714.60, previousClose: 1698.90, volume: 14_200_000, avgVolume: 16_800_000,
     fundamentals: { peRatio: 18.4, eps: 93.2, marketCap: 13000, high52w: 1880.00, low52w: 1363.55, dividendYield: 1.22, beta: 0.81, roe: 16.8, analystTarget: 1950.0, forwardPE: 15.8, revenueGrowth: 14.2, profitMargin: 24.4 },
     description: 'HDFC Bank is India\'s largest private sector lender serving 91 million customers.',
   },
   {
-    symbol: 'INFY', name: 'Infosys Ltd.', exchange: 'BSE', currency: 'INR', sector: 'Technology',
+    symbol: 'INFY', name: 'Infosys Ltd.', exchange: 'NSE', currency: 'INR', sector: 'Technology',
     price: 1524.35, previousClose: 1509.80, volume: 9_800_000, avgVolume: 11_200_000,
     fundamentals: { peRatio: 22.4, eps: 68.0, marketCap: 6340, high52w: 1951.40, low52w: 1358.35, dividendYield: 2.58, beta: 0.76, roe: 31.4, analystTarget: 1750.0, forwardPE: 19.6, revenueGrowth: 3.8, profitMargin: 18.7 },
     description: 'Infosys is a global leader in next-generation digital services and consulting.',
+  },
+  {
+    symbol: 'ICICIBANK', name: 'ICICI Bank Ltd.', exchange: 'NSE', currency: 'INR', sector: 'Finance',
+    price: 1248.70, previousClose: 1231.45, volume: 19_400_000, avgVolume: 22_100_000,
+    fundamentals: { peRatio: 17.2, eps: 72.6, marketCap: 8780, high52w: 1388.25, low52w: 970.20, dividendYield: 0.80, beta: 0.90, roe: 18.4, analystTarget: 1450.0, forwardPE: 14.8, revenueGrowth: 18.3, profitMargin: 26.1 },
+    description: 'ICICI Bank is India\'s second-largest private bank with a strong retail and corporate banking franchise.',
+  },
+  {
+    symbol: 'KOTAKBANK', name: 'Kotak Mahindra Bank', exchange: 'NSE', currency: 'INR', sector: 'Finance',
+    price: 1892.30, previousClose: 1874.60, volume: 8_200_000, avgVolume: 9_600_000,
+    fundamentals: { peRatio: 20.4, eps: 92.8, marketCap: 3770, high52w: 2108.40, low52w: 1543.85, dividendYield: 0.10, beta: 0.78, roe: 14.2, analystTarget: 2200.0, forwardPE: 17.6, revenueGrowth: 12.8, profitMargin: 28.4 },
+    description: 'Kotak Mahindra Bank is one of India\'s fastest-growing banks known for conservative lending and digital innovation.',
+  },
+  {
+    symbol: 'SBIN', name: 'State Bank of India', exchange: 'NSE', currency: 'INR', sector: 'Finance',
+    price: 812.45, previousClose: 805.10, volume: 42_000_000, avgVolume: 48_500_000,
+    fundamentals: { peRatio: 10.8, eps: 75.2, marketCap: 7242, high52w: 912.00, low52w: 601.35, dividendYield: 1.72, beta: 1.12, roe: 21.4, analystTarget: 970.0, forwardPE: 9.2, revenueGrowth: 13.6, profitMargin: 19.8 },
+    description: 'State Bank of India is the country\'s largest public sector bank with over 22,000 branches nationwide.',
+  },
+  {
+    symbol: 'BHARTIARTL', name: 'Bharti Airtel Ltd.', exchange: 'NSE', currency: 'INR', sector: 'Telecom',
+    price: 1684.55, previousClose: 1658.20, volume: 11_300_000, avgVolume: 13_800_000,
+    fundamentals: { peRatio: 62.8, eps: 26.8, marketCap: 10080, high52w: 1778.75, low52w: 1143.65, dividendYield: 0.48, beta: 0.84, roe: 28.6, analystTarget: 1950.0, forwardPE: 35.0, revenueGrowth: 22.4, profitMargin: 11.2 },
+    description: 'Bharti Airtel is India\'s leading telecom operator with 500M+ subscribers across 18 countries.',
+  },
+  {
+    symbol: 'HCLTECH', name: 'HCL Technologies', exchange: 'NSE', currency: 'INR', sector: 'Technology',
+    price: 1542.80, previousClose: 1528.40, volume: 7_100_000, avgVolume: 8_400_000,
+    fundamentals: { peRatio: 24.6, eps: 62.7, marketCap: 4190, high52w: 1928.50, low52w: 1235.90, dividendYield: 3.24, beta: 0.80, roe: 24.8, analystTarget: 1780.0, forwardPE: 21.4, revenueGrowth: 6.2, profitMargin: 15.8 },
+    description: 'HCL Technologies is a global IT services company specialising in engineering R&D and cloud transformation.',
+  },
+  {
+    symbol: 'WIPRO', name: 'Wipro Ltd.', exchange: 'NSE', currency: 'INR', sector: 'Technology',
+    price: 487.65, previousClose: 482.30, volume: 13_200_000, avgVolume: 15_400_000,
+    fundamentals: { peRatio: 18.4, eps: 26.5, marketCap: 2692, high52w: 577.75, low52w: 378.90, dividendYield: 0.21, beta: 0.74, roe: 14.2, analystTarget: 560.0, forwardPE: 16.8, revenueGrowth: 0.6, profitMargin: 13.4 },
+    description: 'Wipro is a leading global IT and consulting services company headquartered in Bengaluru.',
+  },
+  {
+    symbol: 'BAJFINANCE', name: 'Bajaj Finance Ltd.', exchange: 'NSE', currency: 'INR', sector: 'Finance',
+    price: 7124.50, previousClose: 7038.80, volume: 3_400_000, avgVolume: 4_100_000,
+    fundamentals: { peRatio: 32.4, eps: 220.0, marketCap: 4394, high52w: 8192.35, low52w: 6187.50, dividendYield: 0.28, beta: 1.18, roe: 22.8, analystTarget: 8500.0, forwardPE: 26.2, revenueGrowth: 32.4, profitMargin: 22.6 },
+    description: 'Bajaj Finance is India\'s largest non-banking financial company, serving 80 million customers.',
+  },
+  {
+    symbol: 'HINDUNILVR', name: 'Hindustan Unilever', exchange: 'NSE', currency: 'INR', sector: 'Consumer',
+    price: 2384.60, previousClose: 2369.40, volume: 4_200_000, avgVolume: 5_000_000,
+    fundamentals: { peRatio: 54.2, eps: 44.0, marketCap: 5598, high52w: 2778.00, low52w: 2124.35, dividendYield: 1.92, beta: 0.52, roe: 19.4, analystTarget: 2700.0, forwardPE: 46.8, revenueGrowth: 5.4, profitMargin: 16.4 },
+    description: 'Hindustan Unilever is India\'s largest FMCG company with a portfolio of 50+ iconic household brands.',
+  },
+  {
+    symbol: 'MARUTI', name: 'Maruti Suzuki India', exchange: 'NSE', currency: 'INR', sector: 'Consumer',
+    price: 12184.40, previousClose: 12042.60, volume: 1_600_000, avgVolume: 1_900_000,
+    fundamentals: { peRatio: 26.8, eps: 454.6, marketCap: 3674, high52w: 13680.00, low52w: 9758.25, dividendYield: 1.10, beta: 0.86, roe: 18.6, analystTarget: 14200.0, forwardPE: 22.4, revenueGrowth: 12.4, profitMargin: 8.8 },
+    description: 'Maruti Suzuki is India\'s largest passenger vehicle manufacturer with a ~42% market share.',
+  },
+  {
+    symbol: 'ASIANPAINT', name: 'Asian Paints Ltd.', exchange: 'NSE', currency: 'INR', sector: 'Materials',
+    price: 2284.15, previousClose: 2268.40, volume: 3_800_000, avgVolume: 4_400_000,
+    fundamentals: { peRatio: 48.4, eps: 47.2, marketCap: 2188, high52w: 3394.80, low52w: 2064.50, dividendYield: 1.48, beta: 0.62, roe: 26.4, analystTarget: 2700.0, forwardPE: 38.2, revenueGrowth: -3.2, profitMargin: 11.4 },
+    description: 'Asian Paints is India\'s largest paint company and Asia\'s third-largest, operating in 15 countries.',
+  },
+  {
+    symbol: 'SUNPHARMA', name: 'Sun Pharmaceutical', exchange: 'NSE', currency: 'INR', sector: 'Healthcare',
+    price: 1724.35, previousClose: 1708.60, volume: 7_600_000, avgVolume: 8_800_000,
+    fundamentals: { peRatio: 34.2, eps: 50.4, marketCap: 4140, high52w: 1960.15, low52w: 1364.90, dividendYield: 0.70, beta: 0.64, roe: 15.4, analystTarget: 1980.0, forwardPE: 28.6, revenueGrowth: 8.8, profitMargin: 16.4 },
+    description: 'Sun Pharma is India\'s largest pharmaceutical company and the world\'s 4th largest specialty generic firm.',
+  },
+  {
+    symbol: 'DRREDDY', name: 'Dr. Reddy\'s Laboratories', exchange: 'NSE', currency: 'INR', sector: 'Healthcare',
+    price: 1284.70, previousClose: 1272.40, volume: 3_200_000, avgVolume: 3_800_000,
+    fundamentals: { peRatio: 18.8, eps: 68.4, marketCap: 2143, high52w: 1592.00, low52w: 1050.45, dividendYield: 0.54, beta: 0.56, roe: 20.2, analystTarget: 1480.0, forwardPE: 16.4, revenueGrowth: 14.6, profitMargin: 18.4 },
+    description: 'Dr. Reddy\'s is a leading Indian pharma with a strong US generics and biosimilars pipeline.',
+  },
+  {
+    symbol: 'AXISBANK', name: 'Axis Bank Ltd.', exchange: 'NSE', currency: 'INR', sector: 'Finance',
+    price: 1124.80, previousClose: 1112.50, volume: 16_400_000, avgVolume: 18_600_000,
+    fundamentals: { peRatio: 12.4, eps: 90.7, marketCap: 3460, high52w: 1339.65, low52w: 995.35, dividendYield: 0.09, beta: 1.04, roe: 18.8, analystTarget: 1280.0, forwardPE: 10.8, revenueGrowth: 15.4, profitMargin: 22.4 },
+    description: 'Axis Bank is India\'s third-largest private sector bank with 5,000+ branches and strong digital banking.',
+  },
+  {
+    symbol: 'ITC', name: 'ITC Ltd.', exchange: 'NSE', currency: 'INR', sector: 'Consumer',
+    price: 484.25, previousClose: 479.80, volume: 28_400_000, avgVolume: 32_100_000,
+    fundamentals: { peRatio: 26.4, eps: 18.3, marketCap: 6072, high52w: 528.45, low52w: 390.50, dividendYield: 3.22, beta: 0.46, roe: 28.4, analystTarget: 580.0, forwardPE: 22.8, revenueGrowth: 10.2, profitMargin: 28.8 },
+    description: 'ITC is a diversified Indian conglomerate with leadership in cigarettes, FMCG, hotels, and agribusiness.',
+  },
+  {
+    symbol: 'LTIM', name: 'LTIMindtree Ltd.', exchange: 'NSE', currency: 'INR', sector: 'Technology',
+    price: 5284.50, previousClose: 5228.40, volume: 1_800_000, avgVolume: 2_200_000,
+    fundamentals: { peRatio: 34.8, eps: 151.8, marketCap: 1564, high52w: 7194.50, low52w: 4408.35, dividendYield: 0.95, beta: 0.82, roe: 26.4, analystTarget: 6200.0, forwardPE: 28.4, revenueGrowth: 7.4, profitMargin: 14.8 },
+    description: 'LTIMindtree is a global IT services company formed from the merger of L&T Infotech and Mindtree.',
+  },
+  {
+    symbol: 'TECHM', name: 'Tech Mahindra Ltd.', exchange: 'NSE', currency: 'INR', sector: 'Technology',
+    price: 1584.20, previousClose: 1568.40, volume: 4_400_000, avgVolume: 5_200_000,
+    fundamentals: { peRatio: 42.4, eps: 37.4, marketCap: 1544, high52w: 1762.50, low52w: 1094.35, dividendYield: 1.90, beta: 0.88, roe: 12.4, analystTarget: 1780.0, forwardPE: 26.8, revenueGrowth: 1.8, profitMargin: 7.8 },
+    description: 'Tech Mahindra is a leading IT and BPO services company with deep expertise in telecom and 5G.',
+  },
+  {
+    symbol: 'NTPC', name: 'NTPC Ltd.', exchange: 'NSE', currency: 'INR', sector: 'Utilities',
+    price: 382.40, previousClose: 378.90, volume: 24_800_000, avgVolume: 28_200_000,
+    fundamentals: { peRatio: 16.8, eps: 22.8, marketCap: 3713, high52w: 448.45, low52w: 295.35, dividendYield: 2.56, beta: 0.62, roe: 13.8, analystTarget: 450.0, forwardPE: 14.4, revenueGrowth: 9.4, profitMargin: 13.4 },
+    description: 'NTPC is India\'s largest power utility, accounting for nearly 25% of total installed capacity.',
+  },
+  {
+    symbol: 'ONGC', name: 'Oil & Natural Gas Corp', exchange: 'NSE', currency: 'INR', sector: 'Energy',
+    price: 268.45, previousClose: 264.80, volume: 34_200_000, avgVolume: 38_400_000,
+    fundamentals: { peRatio: 7.8, eps: 34.4, marketCap: 3374, high52w: 345.00, low52w: 204.65, dividendYield: 4.48, beta: 0.82, roe: 14.2, analystTarget: 320.0, forwardPE: 7.2, revenueGrowth: 4.8, profitMargin: 12.8 },
+    description: 'ONGC is India\'s largest oil and gas exploration & production company with domestic and global operations.',
+  },
+  {
+    symbol: 'POWERGRID', name: 'Power Grid Corp.', exchange: 'NSE', currency: 'INR', sector: 'Utilities',
+    price: 324.60, previousClose: 321.40, volume: 22_400_000, avgVolume: 25_800_000,
+    fundamentals: { peRatio: 18.4, eps: 17.6, marketCap: 3020, high52w: 366.25, low52w: 228.80, dividendYield: 3.82, beta: 0.44, roe: 18.8, analystTarget: 375.0, forwardPE: 16.4, revenueGrowth: 6.8, profitMargin: 34.2 },
+    description: 'Power Grid Corporation is India\'s central transmission utility managing 170,000 km of transmission lines.',
+  },
+  // ── BSE ───────────────────────────────────────────────────────────────────
+  {
+    symbol: 'BAJAJ-AUTO', name: 'Bajaj Auto Ltd.', exchange: 'BSE', currency: 'INR', sector: 'Consumer',
+    price: 9284.50, previousClose: 9184.20, volume: 1_200_000, avgVolume: 1_450_000,
+    fundamentals: { peRatio: 32.4, eps: 286.8, marketCap: 2605, high52w: 12774.00, low52w: 7407.50, dividendYield: 0.86, beta: 0.78, roe: 28.4, analystTarget: 11000.0, forwardPE: 26.4, revenueGrowth: 14.8, profitMargin: 18.2 },
+    description: 'Bajaj Auto is the world\'s third-largest two-and-three-wheeler manufacturer and India\'s leading exporter.',
+  },
+  {
+    symbol: 'TATAMOTORS', name: 'Tata Motors Ltd.', exchange: 'BSE', currency: 'INR', sector: 'Consumer',
+    price: 784.30, previousClose: 772.40, volume: 24_600_000, avgVolume: 28_200_000,
+    fundamentals: { peRatio: 8.4, eps: 93.4, marketCap: 2881, high52w: 1148.90, low52w: 715.50, dividendYield: 0.00, beta: 1.24, roe: 24.4, analystTarget: 1050.0, forwardPE: 7.8, revenueGrowth: 10.4, profitMargin: 8.2 },
+    description: 'Tata Motors is a global automotive giant owning Jaguar Land Rover and a leading EV portfolio in India.',
+  },
+  {
+    symbol: 'TITAN', name: 'Titan Company Ltd.', exchange: 'BSE', currency: 'INR', sector: 'Consumer',
+    price: 3284.40, previousClose: 3248.80, volume: 3_800_000, avgVolume: 4_400_000,
+    fundamentals: { peRatio: 92.4, eps: 35.5, marketCap: 2920, high52w: 3886.90, low52w: 2534.50, dividendYield: 0.30, beta: 0.82, roe: 34.2, analystTarget: 3800.0, forwardPE: 72.4, revenueGrowth: 18.2, profitMargin: 7.4 },
+    description: 'Titan is India\'s dominant lifestyle company with leadership in jewellery (Tanishq), watches, and eyewear.',
+  },
+  {
+    symbol: 'ULTRACEMCO', name: 'UltraTech Cement', exchange: 'BSE', currency: 'INR', sector: 'Materials',
+    price: 11284.60, previousClose: 11148.40, volume: 1_400_000, avgVolume: 1_700_000,
+    fundamentals: { peRatio: 38.4, eps: 293.9, marketCap: 3260, high52w: 12684.00, low52w: 9172.30, dividendYield: 0.35, beta: 0.88, roe: 14.4, analystTarget: 13000.0, forwardPE: 30.8, revenueGrowth: 8.4, profitMargin: 9.8 },
+    description: 'UltraTech Cement is India\'s largest cement manufacturer with 130+ MN tonnes of annual capacity.',
+  },
+  {
+    symbol: 'ADANIPORTS', name: 'Adani Ports & SEZ', exchange: 'BSE', currency: 'INR', sector: 'Industrial',
+    price: 1284.80, previousClose: 1268.40, volume: 8_400_000, avgVolume: 9_800_000,
+    fundamentals: { peRatio: 28.4, eps: 45.2, marketCap: 2770, high52w: 1621.40, low52w: 1018.60, dividendYield: 0.31, beta: 1.14, roe: 16.8, analystTarget: 1550.0, forwardPE: 22.4, revenueGrowth: 24.8, profitMargin: 38.4 },
+    description: 'Adani Ports is India\'s largest multi-port operator, handling ~24% of India\'s total cargo traffic.',
+  },
+  {
+    symbol: 'NESTLEIND', name: 'Nestle India Ltd.', exchange: 'BSE', currency: 'INR', sector: 'Consumer',
+    price: 2284.40, previousClose: 2268.80, volume: 2_400_000, avgVolume: 2_800_000,
+    fundamentals: { peRatio: 72.4, eps: 31.5, marketCap: 2203, high52w: 2778.00, low52w: 2064.50, dividendYield: 1.74, beta: 0.34, roe: 112.4, analystTarget: 2600.0, forwardPE: 58.4, revenueGrowth: 8.4, profitMargin: 19.4 },
+    description: 'Nestle India is the local subsidiary of Nestle SA, known for Maggi, KitKat, Nescafe, and Munch.',
+  },
+  {
+    symbol: 'WIPROBSE', name: 'Wipro Ltd. (BSE)', exchange: 'BSE', currency: 'INR', sector: 'Technology',
+    price: 487.40, previousClose: 482.10, volume: 6_400_000, avgVolume: 7_800_000,
+    fundamentals: { peRatio: 18.4, eps: 26.5, marketCap: 2692, high52w: 577.75, low52w: 378.90, dividendYield: 0.21, beta: 0.74, roe: 14.2, analystTarget: 560.0, forwardPE: 16.8, revenueGrowth: 0.6, profitMargin: 13.4 },
+    description: 'Wipro is a leading global IT and consulting services company headquartered in Bengaluru.',
   },
   // ── SSE ───────────────────────────────────────────────────────────────────
   {
@@ -463,6 +674,30 @@ const raw: RawStock[] = [
     price: 6.12, previousClose: 6.08, volume: 145_000_000, avgVolume: 162_000_000,
     fundamentals: { peRatio: 4.8, eps: 1.28, marketCap: 21400, high52w: 6.84, low52w: 5.14, dividendYield: 7.11, beta: 0.52, roe: 11.1, analystTarget: 7.20, forwardPE: 4.5, revenueGrowth: 2.3, profitMargin: 40.2 },
     description: 'ICBC is the world\'s largest bank by total assets, headquartered in Beijing.',
+  },
+  {
+    symbol: '601318', name: 'Ping An Insurance', exchange: 'SSE', currency: 'CNY', sector: 'Finance',
+    price: 42.84, previousClose: 42.24, volume: 48_000_000, avgVolume: 54_000_000,
+    fundamentals: { peRatio: 8.4, eps: 5.10, marketCap: 7824, high52w: 52.0, low52w: 34.40, dividendYield: 5.62, beta: 0.84, roe: 12.4, analystTarget: 52.0, forwardPE: 7.8, revenueGrowth: 3.8, profitMargin: 18.4 },
+    description: 'Ping An Insurance is China\'s largest insurer by market cap with banking and fintech subsidiaries.',
+  },
+  {
+    symbol: '600036', name: 'China Merchants Bank', exchange: 'SSE', currency: 'CNY', sector: 'Finance',
+    price: 36.48, previousClose: 36.02, volume: 64_000_000, avgVolume: 72_000_000,
+    fundamentals: { peRatio: 5.8, eps: 6.29, marketCap: 9180, high52w: 42.22, low52w: 28.64, dividendYield: 5.14, beta: 0.72, roe: 16.2, analystTarget: 44.0, forwardPE: 5.4, revenueGrowth: 5.8, profitMargin: 38.4 },
+    description: 'China Merchants Bank is China\'s leading retail bank known for credit cards and high net-worth clients.',
+  },
+  {
+    symbol: '600900', name: 'China Yangtze Power', exchange: 'SSE', currency: 'CNY', sector: 'Utilities',
+    price: 24.62, previousClose: 24.34, volume: 32_000_000, avgVolume: 36_000_000,
+    fundamentals: { peRatio: 18.4, eps: 1.34, marketCap: 5408, high52w: 28.48, low52w: 19.82, dividendYield: 3.62, beta: 0.38, roe: 14.4, analystTarget: 28.0, forwardPE: 16.8, revenueGrowth: 6.2, profitMargin: 46.4 },
+    description: 'China Yangtze Power operates the Three Gorges Dam, the world\'s largest hydroelectric power station.',
+  },
+  {
+    symbol: '600028', name: 'Sinopec Corp.', exchange: 'SSE', currency: 'CNY', sector: 'Energy',
+    price: 5.82, previousClose: 5.74, volume: 124_000_000, avgVolume: 138_000_000,
+    fundamentals: { peRatio: 9.4, eps: 0.62, marketCap: 7124, high52w: 7.08, low52w: 4.82, dividendYield: 6.84, beta: 0.68, roe: 8.4, analystTarget: 7.0, forwardPE: 8.8, revenueGrowth: 2.4, profitMargin: 3.4 },
+    description: 'Sinopec is China\'s second-largest oil company with the world\'s largest petroleum refining capacity.',
   },
   // ── ASX ───────────────────────────────────────────────────────────────────
   {
@@ -483,6 +718,42 @@ const raw: RawStock[] = [
     fundamentals: { peRatio: 43.8, eps: 6.67, marketCap: 142, high52w: 342.00, low52w: 239.80, dividendYield: 1.18, beta: 0.72, roe: 24.6, analystTarget: 320.0, forwardPE: 36.2, revenueGrowth: 10.4, profitMargin: 14.8 },
     description: 'CSL is a global biotech leader in plasma-derived therapies and vaccines.',
   },
+  {
+    symbol: 'NAB', name: 'National Australia Bank', exchange: 'ASX', currency: 'AUD', sector: 'Finance',
+    price: 38.62, previousClose: 38.14, volume: 12_400_000, avgVolume: 14_200_000,
+    fundamentals: { peRatio: 14.8, eps: 2.61, marketCap: 72, high52w: 42.84, low52w: 29.62, dividendYield: 4.38, beta: 0.94, roe: 11.8, analystTarget: 43.0, forwardPE: 13.4, revenueGrowth: 8.2, profitMargin: 32.4 },
+    description: 'NAB is one of Australia\'s four major banks providing personal, business, and corporate banking.',
+  },
+  {
+    symbol: 'WBC', name: 'Westpac Banking Corp.', exchange: 'ASX', currency: 'AUD', sector: 'Finance',
+    price: 32.84, previousClose: 32.42, volume: 14_200_000, avgVolume: 16_400_000,
+    fundamentals: { peRatio: 14.2, eps: 2.31, marketCap: 62, high52w: 36.84, low52w: 24.80, dividendYield: 4.58, beta: 0.98, roe: 9.8, analystTarget: 36.0, forwardPE: 13.2, revenueGrowth: 5.4, profitMargin: 28.4 },
+    description: 'Westpac is Australia\'s oldest bank and one of its four majors with 13 million customers.',
+  },
+  {
+    symbol: 'WES', name: 'Wesfarmers Ltd.', exchange: 'ASX', currency: 'AUD', sector: 'Consumer',
+    price: 74.84, previousClose: 73.96, volume: 4_800_000, avgVolume: 5_600_000,
+    fundamentals: { peRatio: 28.4, eps: 2.63, marketCap: 85, high52w: 80.82, low52w: 52.42, dividendYield: 3.22, beta: 0.72, roe: 38.4, analystTarget: 82.0, forwardPE: 24.8, revenueGrowth: 7.4, profitMargin: 6.8 },
+    description: 'Wesfarmers is a diversified Australian conglomerate owning Bunnings, Kmart, Officeworks, and Priceline.',
+  },
+  {
+    symbol: 'ANZ', name: 'ANZ Banking Group', exchange: 'ASX', currency: 'AUD', sector: 'Finance',
+    price: 29.84, previousClose: 29.42, volume: 16_400_000, avgVolume: 18_800_000,
+    fundamentals: { peRatio: 12.4, eps: 2.41, marketCap: 84, high52w: 33.84, low52w: 22.84, dividendYield: 5.14, beta: 0.96, roe: 10.4, analystTarget: 32.0, forwardPE: 11.8, revenueGrowth: 4.8, profitMargin: 30.4 },
+    description: 'ANZ is one of Australia\'s four major banks with strong Asia-Pacific presence across 30 markets.',
+  },
+  {
+    symbol: 'RIO', name: 'Rio Tinto Ltd.', exchange: 'ASX', currency: 'AUD', sector: 'Materials',
+    price: 114.84, previousClose: 113.28, volume: 6_200_000, avgVolume: 7_400_000,
+    fundamentals: { peRatio: 9.4, eps: 12.22, marketCap: 170, high52w: 134.48, low52w: 96.42, dividendYield: 7.84, beta: 0.92, roe: 24.8, analystTarget: 130.0, forwardPE: 8.8, revenueGrowth: -3.4, profitMargin: 28.4 },
+    description: 'Rio Tinto is the world\'s second-largest mining company with major iron ore, aluminium, and copper operations.',
+  },
+  {
+    symbol: 'MQG', name: 'Macquarie Group', exchange: 'ASX', currency: 'AUD', sector: 'Finance',
+    price: 212.84, previousClose: 209.82, volume: 2_400_000, avgVolume: 2_800_000,
+    fundamentals: { peRatio: 18.4, eps: 11.56, marketCap: 72, high52w: 242.74, low52w: 148.42, dividendYield: 3.14, beta: 1.18, roe: 14.4, analystTarget: 240.0, forwardPE: 16.4, revenueGrowth: 4.8, profitMargin: 26.8 },
+    description: 'Macquarie Group is a global financial services firm known as an infrastructure investment specialist.',
+  },
 ];
 
 // Build the final catalog with computed change fields
@@ -495,9 +766,24 @@ export const STOCKS: Stock[] = raw.map(s => ({
 
 export const STOCKS_BY_SYMBOL = new Map<string, Stock>(STOCKS.map(s => [s.symbol, s]));
 
-// ─── Ticker bar: 28 tickers across exchanges ──────────────────────────────────
+// ─── Ticker bar: 40 tickers across exchanges ──────────────────────────────────
 export const TICKER_BAR_SYMBOLS = [
+  // US
   'AAPL','MSFT','NVDA','GOOGL','META','AMZN','TSLA','BRK.B','JPM','V',
-  'HSBA','AZN','SHEL','0700','9988','7203','6758','AIR','MC','BHP',
-  'RELIANCE','TCS','HDFCBANK','600519','AVGO','XOM','CBA','CSL',
+  // UK
+  'HSBA','AZN','SHEL',
+  // HK / China
+  '0700','9988','1211','3690',
+  // Japan
+  '7203','6758','9984','7974',
+  // Euronext
+  'AIR','MC',
+  // NSE (India)
+  'RELIANCE','TCS','HDFCBANK','ICICIBANK','BHARTIARTL','INFY','SBIN','ITC',
+  // BSE
+  'BAJAJ-AUTO','TATAMOTORS',
+  // ASX
+  'BHP','CBA','CSL','RIO',
+  // SSE
+  '600519','601398',
 ];
