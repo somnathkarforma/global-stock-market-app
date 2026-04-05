@@ -64,7 +64,7 @@ module.exports = {
         flashGreen: 'flashGreen 0.6s ease',
         flashRed: 'flashRed 0.6s ease',
         shimmer: 'shimmer 1.6s linear infinite',
-        marquee: 'marquee 120s linear infinite',
+        marquee: 'marquee 240s linear infinite',
         slideUp: 'slideUp 0.3s ease both',
         fadeIn: 'fadeIn 0.25s ease both',
         typing: 'typing 1.2s ease infinite',

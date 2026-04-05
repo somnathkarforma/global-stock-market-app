@@ -2,6 +2,11 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
+  "functions": {
+    "api/chat.ts": { "maxDuration": 30 },
+    "api/stock-search.ts": { "maxDuration": 15 },
+    "api/stock-quote.ts": { "maxDuration": 15 }
+  },
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
