@@ -20,7 +20,7 @@ A Bloomberg-terminal-inspired global stock market analytics SPA built with React
 | **Watchlist** | Star stocks; persisted to `localStorage` |
 | **Detail Modal** | Area chart (1D/1W/1M/3M/1Y/5Y), 12 fundamental metrics, news with sentiment |
 | **Market Overview** | 10 global indices, sector heatmap, top 5 gainers/losers, real-time exchange status |
-| **AI Chat** | Groq Llama 3.1 8B Instant via Vercel **Edge** function — no timeout, fast 1–2s responses, live stock context injected per query |
+| **AI Chat** | Groq Llama 3.1 8B Instant via Vercel **Edge** function — no timeout, fast 1–2s responses. Live stock context injected per query for both local and non-local (Yahoo Finance-fetched) symbols, so AI prices always match the search panel |
 
 ---
 
@@ -144,6 +144,12 @@ The AI chat input now has a stock autocomplete dropdown:
 - A dropdown appears **above** the textarea with instant local matches and live Yahoo Finance results
 - Select any suggestion to insert the symbol at your cursor — the rest of your message is preserved
 - Works for any globally listed equity, not just the built-in mock catalog
+
+### AI Live Data Sync
+The AI chat always uses the same real-time price data as the search panel:
+- When you mention a stock from the local catalog (e.g. `AAPL`, `TCS`), its live simulated price is injected into the prompt
+- When you mention a non-local symbol (e.g. `TATAELXSI.NS`, `TATAPOWER.NS`), the app fetches a live quote via `api/stock-quote` and injects that data before the message is sent to the AI
+- This ensures the AI response reflects the exact same exchange rate, price, and change % shown in the left-panel search results
 
 ---
 

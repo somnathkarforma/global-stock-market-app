@@ -63,7 +63,8 @@ StockSense is a Bloomberg-terminal-inspired stock market analytics Single Page A
 - Powered by Groq API (`llama-3.1-8b-instant`) via a **Vercel Edge function** — no execution timeout on hobby plan
 - `GROQ_API_KEY` stored server-side as a Vercel environment variable — never in the browser bundle
 - **Minimal static system prompt** (~300 tokens) — no bulk stock data table
-- **Per-query context injection**: only stocks mentioned in the user message have their live data prepended (up to 3 stocks, ~80 tokens each)
+- **Per-query context injection (local stocks)**: stocks from the local catalog mentioned in the user message have their live data prepended (up to 3 stocks, ~80 tokens each)
+- **Per-query context injection (live/non-local stocks)**: symbol-like tokens in the user message that are not in the local catalog are resolved via `api/stock-quote` (with 5s timeout, concurrent fetch for up to 3 symbols); successfully fetched quotes are injected identically to local stock context — ensuring AI responses always reflect the same real-time price shown in the search panel
 - Conversation history trimmed to last 6 messages to keep tokens low
 - Total per-request cost: ~400–700 tokens (well within 12,000 TPM free limit)
 - 15s client-side `AbortController` timeout with a descriptive error message
@@ -72,7 +73,7 @@ StockSense is a Bloomberg-terminal-inspired stock market analytics Single Page A
 - Clicking popup or typing a bare symbol triggers a full deep-dive analysis request
 - Suggested prompt chips shown on first load
 - Markdown rendering: bold cyan headers, bullet lists, italic disclaimers
-- For stocks not in the local catalog: AI uses general knowledge with ⚠️ disclaimer
+- For stocks not resolvable via live quote: AI uses general knowledge with ⚠️ disclaimer
 
 ### FR-10 — Navigation
 - Top navbar with two main views: Stocks and Market Overview
