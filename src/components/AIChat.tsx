@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Send, Bot, ChevronDown, Sparkles, TrendingUp } from 'lucide-react';
-import { Stock } from '../data/mockData';
+import { Stock, EXCHANGES, isExchangeOpen } from '../data/mockData';
 import { fmt, fmtPct, fmtMktCap } from '../utils/market';
 
 interface Message {
@@ -25,13 +25,23 @@ const SUGGESTIONS = [
 ];
 
 const buildSystemPrompt = (stocks: Stock[]): string => {
-  const allStocks = stocks.map(s =>
-    `${s.symbol} (${s.name}, ${s.exchange}): price=${fmt(s.price, s.currency)}, change=${fmtPct(s.changePercent)}, PE=${s.fundamentals.peRatio}, forwardPE=${s.fundamentals.forwardPE}, EPS=${s.fundamentals.eps}, dividendYield=${s.fundamentals.dividendYield}%, beta=${s.fundamentals.beta}, ROE=${s.fundamentals.roe}%, revenueGrowth=${s.fundamentals.revenueGrowth}%, profitMargin=${s.fundamentals.profitMargin}%, analystTarget=${fmt(s.fundamentals.analystTarget, s.currency)}, marketCap=${fmtMktCap(s.fundamentals.marketCap, s.currency)}, sector=${s.sector}`
-  ).join('\n');
+  // Build per-exchange open/closed status
+  const exchangeStatus = EXCHANGES.map(ex => {
+    const open = isExchangeOpen(ex.name as Parameters<typeof isExchangeOpen>[0]);
+    return `${ex.name} (${ex.label}): ${open ? 'OPEN ✅' : 'CLOSED 🔴'}`;
+  }).join(', ');
+
+  const allStocks = stocks.map(s => {
+    const open = isExchangeOpen(s.exchange);
+    return `${s.symbol} (${s.name}, ${s.exchange} [${open ? 'OPEN' : 'CLOSED'}]): price=${fmt(s.price, s.currency)}, change=${fmtPct(s.changePercent)}, PE=${s.fundamentals.peRatio}, forwardPE=${s.fundamentals.forwardPE}, EPS=${s.fundamentals.eps}, dividendYield=${s.fundamentals.dividendYield}%, beta=${s.fundamentals.beta}, ROE=${s.fundamentals.roe}%, revenueGrowth=${s.fundamentals.revenueGrowth}%, profitMargin=${s.fundamentals.profitMargin}%, analystTarget=${fmt(s.fundamentals.analystTarget, s.currency)}, marketCap=${fmtMktCap(s.fundamentals.marketCap, s.currency)}, sector=${s.sector}`;
+  }).join('\n');
 
   return `You are StockSense AI, a Bloomberg-style market intelligence assistant with access to live market data.
 
-Live market data for ALL ${stocks.length} stocks:
+Current exchange market hours status:
+${exchangeStatus}
+
+Live market data for ALL ${stocks.length} stocks (exchange status shown as OPEN/CLOSED):
 ${allStocks}
 
 When asked to analyze a specific stock, ALWAYS use the exact live data above and respond with this structure:
@@ -40,6 +50,8 @@ When asked to analyze a specific stock, ALWAYS use the exact live data above and
 
 As of current market data, here is the live snapshot:
 - **Live Price:** [exact price from data] ([change%] today)
+- **Market Status:** [OPEN 🟢 / CLOSED 🔴 — based on the exchange status above]
+- **Exchange:** [exchange name] ([timezone] session)
 - **Market Cap:** [from data]
 - **P/E Ratio:** [from data]
 - **Dividend Yield:** [from data]%
@@ -211,9 +223,24 @@ export const AIChat: React.FC<Props> = ({ stocks }) => {
               >
                 <div className="flex items-center justify-between gap-2">
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5 flex-wrap">
                       <span className="text-[10px] font-mono font-bold text-accent-cyan">{mentionedStock.symbol}</span>
                       <span className="text-[9px] text-slate-600">· {mentionedStock.exchange}</span>
+                      {(() => {
+                        const open = isExchangeOpen(mentionedStock.exchange);
+                        return (
+                          <span className={`flex items-center gap-0.5 text-[9px] font-bold px-1 py-0.5 rounded ${
+                            open
+                              ? 'text-accent-green bg-accent-green/10 border border-accent-green/20'
+                              : 'text-slate-400 bg-slate-700/40 border border-slate-600/30'
+                          }`}>
+                            <span className={`inline-block w-1.5 h-1.5 rounded-full ${
+                              open ? 'bg-accent-green animate-pulse' : 'bg-slate-500'
+                            }`} />
+                            {open ? 'OPEN' : 'CLOSED'}
+                          </span>
+                        );
+                      })()}
                     </div>
                     <p className="text-[10px] text-slate-400 truncate">{mentionedStock.name}</p>
                   </div>
