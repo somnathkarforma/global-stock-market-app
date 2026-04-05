@@ -42,12 +42,13 @@ export const StockDetailModal: React.FC<Props> = ({ stock, isWatched, onToggleWa
   const isPositive = stock.changePercent >= 0;
   const Icon = isPositive ? TrendingUp : TrendingDown;
   const f = stock.fundamentals;
+  const newsItems = stock.news ?? [];
 
-  const sentimentCounts = stock.news.reduce(
+  const sentimentCounts = newsItems.reduce(
     (acc, n) => { acc[n.sentiment]++; return acc; },
     { positive: 0, neutral: 0, negative: 0 }
   );
-  const totalNews = stock.news.length || 1;
+  const totalNews = newsItems.length || 1;
 
   return (
     <div className="modal-overlay animate-fade-in" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
@@ -244,45 +245,54 @@ export const StockDetailModal: React.FC<Props> = ({ stock, isWatched, onToggleWa
           {/* NEWS TAB */}
           {activeTab === 'news' && (
             <div>
-              {/* Sentiment summary */}
-              <div className="flex gap-2 mb-4">
-                {[
-                  { key: 'positive', color: 'accent-green', label: 'Bullish' },
-                  { key: 'neutral',  color: 'slate-400',    label: 'Neutral' },
-                  { key: 'negative', color: 'accent-red',   label: 'Bearish' },
-                ].map(({ key, color, label }) => {
-                  const count = sentimentCounts[key as keyof typeof sentimentCounts];
-                  const pct = Math.round(count / totalNews * 100);
-                  return (
-                    <div key={key} className="flex-1 bg-navy-900/50 rounded-lg px-3 py-2 border border-navy-700/30 text-center">
-                      <p className={`font-mono text-lg font-bold text-${color}`}>{pct}%</p>
-                      <p className="text-[10px] text-slate-500">{label}</p>
-                    </div>
-                  );
-                })}
-              </div>
-              <div className="space-y-3">
-                {stock.news.map(item => (
-                  <div key={item.id} className="p-3 bg-navy-900/40 rounded-lg border border-navy-700/30 hover:border-navy-600/50 transition-colors">
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <p className="text-xs text-slate-200 leading-relaxed">{item.headline}</p>
-                      <ExternalLink className="w-3 h-3 text-slate-600 flex-shrink-0 mt-0.5" />
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-semibold text-slate-500">{item.source}</span>
-                      <span className="text-slate-700">·</span>
-                      <span className="text-[10px] text-slate-600">{relativeTime(item.timestamp)}</span>
-                      <span className={`ml-auto text-[9px] font-semibold px-1.5 py-0.5 rounded uppercase tracking-wider ${
-                        item.sentiment === 'positive' ? 'bg-accent-green/10 text-accent-green' :
-                        item.sentiment === 'negative' ? 'bg-accent-red/10 text-accent-red' :
-                        'bg-slate-700/30 text-slate-400'
-                      }`}>
-                        {item.sentiment}
-                      </span>
-                    </div>
+              {newsItems.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-sm text-slate-500">No news available for this stock.</p>
+                  <p className="text-xs text-slate-600 mt-1">This is a live-searched stock — ask StockSense AI for the latest updates.</p>
+                </div>
+              ) : (
+                <>
+                  {/* Sentiment summary */}
+                  <div className="flex gap-2 mb-4">
+                    {[
+                      { key: 'positive', color: 'accent-green', label: 'Bullish' },
+                      { key: 'neutral',  color: 'slate-400',    label: 'Neutral' },
+                      { key: 'negative', color: 'accent-red',   label: 'Bearish' },
+                    ].map(({ key, color, label }) => {
+                      const count = sentimentCounts[key as keyof typeof sentimentCounts];
+                      const pct = Math.round(count / totalNews * 100);
+                      return (
+                        <div key={key} className="flex-1 bg-navy-900/50 rounded-lg px-3 py-2 border border-navy-700/30 text-center">
+                          <p className={`font-mono text-lg font-bold text-${color}`}>{pct}%</p>
+                          <p className="text-[10px] text-slate-500">{label}</p>
+                        </div>
+                      );
+                    })}
                   </div>
-                ))}
-              </div>
+                  <div className="space-y-3">
+                    {newsItems.map(item => (
+                      <div key={item.id} className="p-3 bg-navy-900/40 rounded-lg border border-navy-700/30 hover:border-navy-600/50 transition-colors">
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <p className="text-xs text-slate-200 leading-relaxed">{item.headline}</p>
+                          <ExternalLink className="w-3 h-3 text-slate-600 flex-shrink-0 mt-0.5" />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-semibold text-slate-500">{item.source}</span>
+                          <span className="text-slate-700">·</span>
+                          <span className="text-[10px] text-slate-600">{relativeTime(item.timestamp)}</span>
+                          <span className={`ml-auto text-[9px] font-semibold px-1.5 py-0.5 rounded uppercase tracking-wider ${
+                            item.sentiment === 'positive' ? 'bg-accent-green/10 text-accent-green' :
+                            item.sentiment === 'negative' ? 'bg-accent-red/10 text-accent-red' :
+                            'bg-slate-700/30 text-slate-400'
+                          }`}>
+                            {item.sentiment}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>

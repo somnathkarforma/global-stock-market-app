@@ -17,6 +17,7 @@ export default function App() {
   const { watchlist, toggle: toggleWatch, has: isWatched } = useWatchlist();
   const [selectedExchanges, setSelectedExchanges] = useState<string[]>([]);
   const [selectedStock, setSelectedStock] = useState<Stock | null>(null);
+  const [liveStockCache, setLiveStockCache] = useState<Map<string, Stock>>(new Map());
   const [activeView, setActiveView] = useState<'all' | 'watchlist'>('all');
   const [mainView, setMainView] = useState<MainView>('stocks');
 
@@ -49,13 +50,17 @@ export default function App() {
     return list;
   }, [liveStocks, selectedExchanges, activeView, watchlist]);
 
-  // Selected stock with live price
+  // Selected stock with live price (falls back to liveStockCache for externally-fetched stocks)
   const selectedStockLive = useMemo(() => {
     if (!selectedStock) return null;
-    return prices.get(selectedStock.symbol) ?? selectedStock;
-  }, [selectedStock, prices]);
+    return prices.get(selectedStock.symbol) ?? liveStockCache.get(selectedStock.symbol) ?? selectedStock;
+  }, [selectedStock, prices, liveStockCache]);
 
   const handleSelectStock = (stock: Stock) => {
+    // If it's a live-fetched stock not in mock data, cache it so selectedStockLive resolves
+    if (stock.isLive) {
+      setLiveStockCache(prev => new Map(prev).set(stock.symbol, stock));
+    }
     setSelectedStock(stock);
   };
 

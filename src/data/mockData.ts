@@ -54,7 +54,8 @@ export interface Stock {
   avgVolume: number;
   fundamentals: StockFundamentals;
   description: string;
-  news: NewsItem[];
+  news?: NewsItem[];
+  isLive?: boolean; // true for stocks fetched from Yahoo Finance at runtime
 }
 
 // ─── Seeded pseudo-random (deterministic per symbol) ────────────────────────

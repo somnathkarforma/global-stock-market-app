@@ -1,7 +1,22 @@
-import React, { useState, useMemo } from 'react';
-import { Search, Star, StarOff, X, TrendingUp } from 'lucide-react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { Search, Star, StarOff, X, TrendingUp, Loader2, Globe } from 'lucide-react';
 import { Stock, EXCHANGES, isExchangeOpen } from '../data/mockData';
 import { fmt, fmtPct, changeColor } from '../utils/market';
+
+const SEARCH_API = import.meta.env.DEV
+  ? '/api/stock-search'
+  : 'https://global-stock-market-app.vercel.app/api/stock-search';
+
+const QUOTE_API = import.meta.env.DEV
+  ? '/api/stock-quote'
+  : 'https://global-stock-market-app.vercel.app/api/stock-quote';
+
+interface LiveResult {
+  symbol: string;
+  name: string;
+  exchange: string;
+  exchDisp: string;
+}
 
 interface Props {
   stocks: Stock[];
@@ -26,14 +41,56 @@ export const Sidebar: React.FC<Props> = ({
 }) => {
   const [query, setQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
+  const [liveResults, setLiveResults] = useState<LiveResult[]>([]);
+  const [liveLoading, setLiveLoading] = useState(false);
+  const [selectingSymbol, setSelectingSymbol] = useState<string | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const searchResults = useMemo(() => {
+  // Local mock matches (instant)
+  const localResults = useMemo(() => {
     if (!query.trim()) return [];
     const q = query.toLowerCase();
     return stocks
       .filter(s => s.symbol.toLowerCase().includes(q) || s.name.toLowerCase().includes(q))
-      .slice(0, 8);
+      .slice(0, 5);
   }, [query, stocks]);
+
+  // Debounced live search
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (!query.trim() || query.trim().length < 2) { setLiveResults([]); return; }
+    debounceRef.current = setTimeout(async () => {
+      setLiveLoading(true);
+      try {
+        const res = await fetch(`${SEARCH_API}?q=${encodeURIComponent(query.trim())}`);
+        if (res.ok) {
+          const data = await res.json() as { quotes: LiveResult[] };
+          const localSymbols = new Set(stocks.map(s => s.symbol));
+          // Only show live results not already in mock data
+          setLiveResults((data.quotes ?? []).filter(q => !localSymbols.has(q.symbol)));
+        }
+      } catch {
+        // silently fail — local results still shown
+      } finally {
+        setLiveLoading(false);
+      }
+    }, 350);
+  }, [query, stocks]);
+
+  // Fetch full quote and call onSelectStock for a live (non-mock) result
+  const selectLiveStock = async (result: LiveResult) => {
+    setSelectingSymbol(result.symbol);
+    try {
+      const res = await fetch(`${QUOTE_API}?symbol=${encodeURIComponent(result.symbol)}`);
+      if (res.ok) {
+        const data = await res.json() as { quote: Stock };
+        onSelectStock(data.quote);
+      }
+    } catch { /* ignore */ } finally {
+      setSelectingSymbol(null);
+      setQuery('');
+    }
+  };
 
   const watchlistStocks = useMemo(
     () => stocks.filter(s => watchlist.includes(s.symbol)),
@@ -64,19 +121,60 @@ export const Sidebar: React.FC<Props> = ({
         {/* Search dropdown */}
         {showSearch && query.trim() && (
           <div className="absolute z-30 mt-1 w-56 bg-surface-2 border border-navy-700/60 rounded-lg shadow-xl overflow-hidden animate-slide-up">
-            {searchResults.length > 0 ? searchResults.map(s => (
+            {/* Local mock matches */}
+            {localResults.map(s => (
               <button
                 key={s.symbol}
                 onMouseDown={() => { onSelectStock(s); setQuery(''); }}
                 className="w-full flex items-center justify-between px-3 py-2 hover:bg-navy-700/50 transition-colors text-left"
               >
-                <span>
-                  <span className="font-mono text-xs text-accent-cyan font-semibold">{s.symbol}</span>
-                  <span className="text-xs text-slate-400 ml-2 truncate max-w-[100px]">{s.name}</span>
+                <span className="flex items-center gap-1.5 min-w-0">
+                  <span className="font-mono text-xs text-accent-cyan font-semibold flex-shrink-0">{s.symbol}</span>
+                  <span className="text-[10px] text-slate-400 truncate">{s.name}</span>
                 </span>
-                <span className={`font-mono text-xs ${changeColor(s.changePercent)}`}>{fmtPct(s.changePercent)}</span>
+                <span className={`font-mono text-xs flex-shrink-0 ml-1 ${changeColor(s.changePercent)}`}>{fmtPct(s.changePercent)}</span>
               </button>
-            )) : (
+            ))}
+
+            {/* Divider between local and live results */}
+            {liveResults.length > 0 && (
+              <>
+                {localResults.length > 0 && <div className="border-t border-navy-700/50 mx-2" />}
+                <div className="px-3 pt-1.5 pb-0.5 flex items-center gap-1">
+                  <Globe className="w-2.5 h-2.5 text-slate-500" />
+                  <span className="text-[9px] text-slate-500 uppercase tracking-wider">Live from exchanges</span>
+                </div>
+                {liveResults.slice(0, 5).map(r => (
+                  <button
+                    key={r.symbol}
+                    onMouseDown={() => selectLiveStock(r)}
+                    className="w-full flex items-center justify-between px-3 py-2 hover:bg-navy-700/50 transition-colors text-left"
+                    disabled={selectingSymbol === r.symbol}
+                  >
+                    <span className="flex items-center gap-1.5 min-w-0">
+                      <span className="font-mono text-xs text-accent-cyan font-semibold flex-shrink-0">{r.symbol}</span>
+                      <span className="text-[10px] text-slate-400 truncate">{r.name}</span>
+                    </span>
+                    <span className="text-[9px] text-slate-500 flex-shrink-0 ml-1 flex items-center gap-1">
+                      {selectingSymbol === r.symbol
+                        ? <Loader2 className="w-2.5 h-2.5 animate-spin" />
+                        : r.exchange}
+                    </span>
+                  </button>
+                ))}
+              </>
+            )}
+
+            {/* Loading state */}
+            {liveLoading && liveResults.length === 0 && localResults.length === 0 && (
+              <div className="px-3 py-3 flex items-center gap-2 text-slate-500">
+                <Loader2 className="w-3 h-3 animate-spin" />
+                <span className="text-xs">Searching exchanges…</span>
+              </div>
+            )}
+
+            {/* No results */}
+            {!liveLoading && liveResults.length === 0 && localResults.length === 0 && (
               <div className="px-3 py-3 text-center">
                 <p className="text-xs text-slate-400">No results for "<span className="text-accent-cyan">{query}</span>"</p>
                 <p className="text-[10px] text-slate-500 mt-1">Try asking <span className="text-accent-cyan font-semibold">StockSense AI →</span></p>
