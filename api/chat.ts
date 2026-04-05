@@ -14,9 +14,8 @@ async function callGroq(apiKey: string, body: string, attempt = 0): Promise<Resp
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
     body,
   });
-  // Retry once on 429, max 3s delay to stay within Vercel execution budget
+  // One quick retry on 429, no sleep (must finish within Vercel 10s hobby limit)
   if (response.status === 429 && attempt < 1) {
-    await sleep(3000);
     return callGroq(apiKey, body, attempt + 1);
   }
   return response;
@@ -57,8 +56,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const response = await callGroq(
       apiKey,
       JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        max_tokens: 512,
+        model: 'llama-3.1-8b-instant',
+        max_tokens: 400,
         messages,
       }),
     );

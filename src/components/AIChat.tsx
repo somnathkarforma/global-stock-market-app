@@ -90,7 +90,7 @@ export const AIChat: React.FC<Props> = ({ stocks }) => {
     setMentionedStock(null);
     setLoading(true);
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 25000); // 25s hard timeout
+    const timeout = setTimeout(() => controller.abort(), 15000); // 15s — well within Vercel 10s but retried client-side if needed
     try {
       const history = [...messages, userMsg].filter(m => m.id !== 'welcome').slice(-6); // keep last 6 for context
       // Inject live stock data for any stocks mentioned in the final user message
@@ -167,7 +167,7 @@ export const AIChat: React.FC<Props> = ({ stocks }) => {
             </div>
             <div className="min-w-0">
               <p className="text-xs font-semibold text-slate-200">StockSense AI</p>
-              <p className="text-[9px] text-slate-500">Llama 3.3 70B · Groq</p>
+              <p className="text-[9px] text-slate-500">Llama 3.1 8B · Groq</p>
             </div>
           </div>
         )}
