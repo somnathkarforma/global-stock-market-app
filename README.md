@@ -11,6 +11,7 @@ A Bloomberg-terminal-inspired global stock market analytics SPA built with React
 
 | Feature | Description |
 |---------|-------------|
+| **📱 Mobile-First Design** | Fully responsive with bottom navigation, slide-in panels, and touch-optimized UI. Works perfectly on iOS and Android devices with safe area support for notches and home indicators |
 | **Enterprise Header** | Professional branding banner with live Gainers / Losers / Avg-Change pulse, gradient grid overlay, PRO badge |
 | **Live Prices** | 150+ stocks update every 5 seconds via ±random walk simulation with price flash animations |
 | **Ticker Bar** | Scrolling marquee (240s, half-speed) — symbol · exchange badge · company name · price · ▲/▼ % change |
@@ -150,6 +151,23 @@ The AI chat always uses the same real-time price data as the search panel:
 - When you mention a stock from the local catalog (e.g. `AAPL`, `TCS`), its live simulated price is injected into the prompt
 - When you mention a non-local symbol (e.g. `TATAELXSI.NS`, `TATAPOWER.NS`), the app fetches a live quote via `api/stock-quote` and injects that data before the message is sent to the AI
 - This ensures the AI response reflects the exact same exchange rate, price, and change % shown in the left-panel search results
+
+---
+
+## Mobile Experience
+
+StockSense is fully optimized for mobile devices with:
+
+- **Bottom Navigation Bar**: Easy thumb-reach navigation on mobile (Stocks, Markets, Filter, AI Chat)
+- **Slide-in Panels**: Sidebar and AI chat slide in as overlays on mobile
+- **Touch-Friendly**: All interactive elements meet 44px minimum touch target (WCAG 2.1 Level AAA)
+- **iOS Support**: Safe area insets for notch and home indicator
+- **Smooth Scrolling**: Momentum scrolling on iOS devices
+- **Responsive Text**: All text scales appropriately for screen size
+- **Flexible Grids**: Adapts from 1 column (mobile) to 4 columns (desktop)
+- **No Pull-to-Refresh**: Prevents accidental page refresh on mobile
+
+See [MOBILE_FEATURES.md](MOBILE_FEATURES.md) for detailed mobile documentation.
 
 ---
 
