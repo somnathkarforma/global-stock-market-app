@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Send, Bot, ChevronDown, Sparkles, TrendingUp, Globe, Loader2 } from 'lucide-react';
+import { Send, Bot, ChevronDown, Sparkles, TrendingUp, Globe, Loader2, X } from 'lucide-react';
 import { Stock, isExchangeOpen } from '../data/mockData';
 import { fmt, fmtPct, fmtMktCap } from '../utils/market';
 
@@ -35,6 +35,7 @@ interface Message {
 
 interface Props {
   stocks: Stock[];
+  onClose?: () => void;
 }
 
 const PROXY_URL = 'https://global-stock-market-app.vercel.app/api/chat';
@@ -101,7 +102,7 @@ const fetchLiveQuotes = async (text: string, localStocks: Stock[]): Promise<Stoc
   return results.filter((s): s is Stock => s !== null && s.price > 0);
 };
 
-export const AIChat: React.FC<Props> = ({ stocks }) => {
+export const AIChat: React.FC<Props> = ({ stocks, onClose }) => {
   const [messages, setMessages] = useState<Message[]>([{
     id: 'welcome', role: 'assistant',
     content: "Hello! I'm **StockSense AI**, your Bloomberg-style market assistant.\n\nI have live data on **" + stocks.length + ' global stocks** across 10 exchanges. Ask me about market trends, compare stocks, or explore fundamentals.',
@@ -289,7 +290,7 @@ export const AIChat: React.FC<Props> = ({ stocks }) => {
   });
 
   return (
-    <div className={`flex flex-col bg-surface-1 border-l border-navy-700/40 transition-all duration-300 ${isCollapsed ? 'w-12' : 'w-80'} flex-shrink-0`}>
+    <div className={`flex flex-col bg-surface-1 border-l border-navy-700/40 transition-all duration-300 ${isCollapsed ? 'w-12' : 'w-full lg:w-80'} flex-shrink-0 h-full`}>
       <div className="flex items-center justify-between px-3 py-3 border-b border-navy-700/40">
         {!isCollapsed && (
           <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -302,9 +303,16 @@ export const AIChat: React.FC<Props> = ({ stocks }) => {
             </div>
           </div>
         )}
-        <button onClick={() => setIsCollapsed(c => !c)} className="ml-auto p-1 text-slate-500 hover:text-slate-300 transition-colors flex-shrink-0" title={isCollapsed ? 'Expand AI chat' : 'Collapse AI chat'}>
-          {isCollapsed ? <Bot className="w-4 h-4" /> : <ChevronDown className="w-4 h-4 rotate-90" />}
-        </button>
+        <div className="flex items-center gap-2">
+          {onClose && (
+            <button onClick={onClose} className="lg:hidden p-1 text-slate-500 hover:text-slate-300 transition-colors flex-shrink-0" title="Close AI chat">
+              <X className="w-4 h-4" />
+            </button>
+          )}
+          <button onClick={() => setIsCollapsed(c => !c)} className="hidden lg:block ml-auto p-1 text-slate-500 hover:text-slate-300 transition-colors flex-shrink-0" title={isCollapsed ? 'Expand AI chat' : 'Collapse AI chat'}>
+            {isCollapsed ? <Bot className="w-4 h-4" /> : <ChevronDown className="w-4 h-4 rotate-90" />}
+          </button>
+        </div>
       </div>
 
       {!isCollapsed && (

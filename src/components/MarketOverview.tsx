@@ -9,12 +9,12 @@ interface Props {
 }
 
 const ExchangeStatus: React.FC = () => (
-  <div className="bg-surface-2 rounded-xl border border-navy-700/40 p-4">
+  <div className="bg-surface-2 rounded-xl border border-navy-700/40 p-3 sm:p-4">
     <div className="flex items-center gap-2 mb-3">
       <Activity className="w-4 h-4 text-accent-cyan" />
       <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-wider">Exchange Status</h3>
     </div>
-    <div className="grid grid-cols-2 gap-2">
+    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-2 gap-2">
       {EXCHANGES.map(ex => {
         const open = isExchangeOpen(ex.name);
         return (
@@ -42,7 +42,7 @@ export const MarketOverview: React.FC<Props> = ({ stocks, onSelectStock }) => {
   return (
     <div className="space-y-4">
       {/* Market indices */}
-      <div className="bg-surface-2 rounded-xl border border-navy-700/40 p-4">
+      <div className="bg-surface-2 rounded-xl border border-navy-700/40 p-3 sm:p-4">
         <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-3">Global Indices</h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
           {MARKET_INDICES.map(idx => {
@@ -61,7 +61,7 @@ export const MarketOverview: React.FC<Props> = ({ stocks, onSelectStock }) => {
       </div>
 
       {/* Sector heatmap */}
-      <div className="bg-surface-2 rounded-xl border border-navy-700/40 p-4">
+      <div className="bg-surface-2 rounded-xl border border-navy-700/40 p-3 sm:p-4">
         <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-3">Sector Heatmap</h3>
         <div className="flex flex-wrap gap-1.5">
           {Object.entries(
@@ -102,7 +102,7 @@ export const MarketOverview: React.FC<Props> = ({ stocks, onSelectStock }) => {
           { label: 'Top Gainers', data: gainers, positive: true },
           { label: 'Top Losers', data: losers, positive: false },
         ].map(({ label, data, positive }) => (
-          <div key={label} className="bg-surface-2 rounded-xl border border-navy-700/40 p-4">
+          <div key={label} className="bg-surface-2 rounded-xl border border-navy-700/40 p-3 sm:p-4">
             <h3 className={`text-xs font-semibold uppercase tracking-wider mb-3 ${positive ? 'text-accent-green' : 'text-accent-red'}`}>
               {label}
             </h3>

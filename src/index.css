@@ -26,11 +26,33 @@ html, body, #root {
   padding: 0;
   background: var(--navy-950);
   color: #e2e8f0;
+  /* Prevent pull-to-refresh on mobile */
+  overscroll-behavior-y: contain;
 }
 
 body {
   font-family: 'DM Sans', system-ui, sans-serif;
   overscroll-behavior: none;
+  /* Improve text rendering on mobile */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Improve touch targets on mobile */
+@media (max-width: 768px) {
+  button, a, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Smaller buttons can be exceptions */
+  button.compact, .compact-button {
+    min-height: 32px;
+    min-width: 32px;
+  }
 }
 
 /* Ticker number font */
@@ -131,6 +153,21 @@ html { scroll-behavior: smooth; }
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 0.5rem;
+}
+
+/* Smooth momentum scrolling on iOS */
+.overflow-y-auto, .overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Safe area support for iOS notch/home indicator */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.safe-area-top {
+  padding-top: env(safe-area-inset-top);
 }
 
 /* Recharts overrides */

@@ -24,26 +24,26 @@ const TickerItem: React.FC<{ stock: Stock; update?: PriceUpdate }> = ({ stock, u
   const isUp = stock.changePercent >= 0;
 
   return (
-    <div className={`flex items-center gap-2.5 px-4 py-1 rounded ${flash} transition-colors`}>
+    <div className={`flex items-center gap-2.5 px-3 sm:px-4 py-1 rounded ${flash} transition-colors`}>
       {/* Symbol + Exchange badge */}
-      <div className="flex items-center gap-1.5 whitespace-nowrap">
-        <span className="font-mono text-xs font-bold text-accent-cyan tracking-wide">
+      <div className="flex items-center gap-1 sm:gap-1.5 whitespace-nowrap">
+        <span className="font-mono text-[10px] sm:text-xs font-bold text-accent-cyan tracking-wide">
           {stock.symbol}
         </span>
-        <span className="text-[8px] font-bold text-accent-cyan/80 bg-accent-cyan/10 border border-accent-cyan/20 rounded px-1 py-0.5 uppercase tracking-wider leading-none">
+        <span className="text-[7px] sm:text-[8px] font-bold text-accent-cyan/80 bg-accent-cyan/10 border border-accent-cyan/20 rounded px-1 py-0.5 uppercase tracking-wider leading-none">
           {stock.exchange}
         </span>
       </div>
       {/* Company name — short */}
-      <span className="text-[10px] text-slate-300 whitespace-nowrap hidden sm:inline">
+      <span className="text-[9px] sm:text-[10px] text-slate-300 whitespace-nowrap hidden sm:inline">
         {stock.name.split(' ').slice(0, 2).join(' ')}
       </span>
       {/* Price */}
-      <span className="font-mono text-xs text-slate-200 whitespace-nowrap">
+      <span className="font-mono text-[10px] sm:text-xs text-slate-200 whitespace-nowrap">
         {fmt(stock.price, stock.currency)}
       </span>
       {/* Change % with arrow */}
-      <span className={`font-mono text-xs whitespace-nowrap font-medium ${changeColor(stock.changePercent)}`}>
+      <span className={`font-mono text-[10px] sm:text-xs whitespace-nowrap font-medium ${changeColor(stock.changePercent)}`}>
         {isUp ? '▲' : '▼'} {fmtPct(stock.changePercent)}
       </span>
       {/* Divider */}

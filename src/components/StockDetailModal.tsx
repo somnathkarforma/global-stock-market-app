@@ -52,79 +52,79 @@ export const StockDetailModal: React.FC<Props> = ({ stock, isWatched, onToggleWa
 
   return (
     <div className="modal-overlay animate-fade-in" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="bg-surface-1 border border-navy-700/40 rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl animate-slide-up mx-4">
+      <div className="bg-surface-1 border border-navy-700/40 rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl animate-slide-up mx-2 sm:mx-4">
         {/* Header */}
-        <div className="flex items-start justify-between p-5 border-b border-navy-700/40">
-          <div className="flex items-center gap-4">
-            <div>
-              <div className="flex items-center gap-2 mb-0.5">
-                <h2 className="font-mono text-xl font-bold text-accent-cyan tracking-wide">{stock.symbol}</h2>
-                <span className="text-xs font-mono bg-navy-700/60 border border-navy-600/30 text-slate-400 px-2 py-0.5 rounded">
+        <div className="flex items-start justify-between p-3 sm:p-5 border-b border-navy-700/40">
+          <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1 sm:gap-2 mb-0.5 flex-wrap">
+                <h2 className="font-mono text-lg sm:text-xl font-bold text-accent-cyan tracking-wide">{stock.symbol}</h2>
+                <span className="text-[10px] sm:text-xs font-mono bg-navy-700/60 border border-navy-600/30 text-slate-400 px-1.5 sm:px-2 py-0.5 rounded">
                   {stock.exchange}
                 </span>
-                <span className="text-xs font-mono bg-navy-700/60 border border-navy-600/30 text-slate-500 px-2 py-0.5 rounded">
+                <span className="text-[10px] sm:text-xs font-mono bg-navy-700/60 border border-navy-600/30 text-slate-500 px-1.5 sm:px-2 py-0.5 rounded">
                   {stock.currency}
                 </span>
               </div>
-              <p className="text-sm text-slate-400">{stock.name}</p>
+              <p className="text-xs sm:text-sm text-slate-400 truncate">{stock.name}</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-shrink-0">
             <button
               onClick={() => onToggleWatch(stock.symbol)}
-              className={`p-2 rounded-lg border transition-colors ${
+              className={`p-1.5 sm:p-2 rounded-lg border transition-colors ${
                 isWatched
                   ? 'border-accent-amber/30 bg-accent-amber/10 text-accent-amber'
                   : 'border-navy-700/40 text-slate-500 hover:text-accent-amber hover:border-accent-amber/30'
               }`}
             >
-              <Star className="w-4 h-4" fill={isWatched ? 'currentColor' : 'none'} />
+              <Star className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill={isWatched ? 'currentColor' : 'none'} />
             </button>
-            <button onClick={onClose} className="p-2 rounded-lg border border-navy-700/40 text-slate-500 hover:text-slate-200 hover:border-slate-500/40 transition-colors">
-              <X className="w-4 h-4" />
+            <button onClick={onClose} className="p-1.5 sm:p-2 rounded-lg border border-navy-700/40 text-slate-500 hover:text-slate-200 hover:border-slate-500/40 transition-colors">
+              <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
           </div>
         </div>
 
         {/* Price summary */}
-        <div className="flex items-center gap-6 px-5 py-3 bg-navy-900/40 border-b border-navy-700/40">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6 px-3 sm:px-5 py-3 bg-navy-900/40 border-b border-navy-700/40">
           <div>
-            <p className="font-mono text-2xl font-bold text-white leading-none">{fmt(stock.price, stock.currency)}</p>
+            <p className="font-mono text-xl sm:text-2xl font-bold text-white leading-none">{fmt(stock.price, stock.currency)}</p>
             <div className={`flex items-center gap-1.5 mt-1 ${changeColor(stock.changePercent)}`}>
-              <Icon className="w-3.5 h-3.5" />
-              <span className="font-mono text-sm font-semibold">{fmtPct(stock.changePercent)}</span>
-              <span className="font-mono text-xs opacity-70">
+              <Icon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+              <span className="font-mono text-xs sm:text-sm font-semibold">{fmtPct(stock.changePercent)}</span>
+              <span className="font-mono text-[10px] sm:text-xs opacity-70">
                 ({stock.change >= 0 ? '+' : ''}{fmt(Math.abs(stock.change), stock.currency)}) today
               </span>
             </div>
           </div>
-          <div className="flex gap-4 ml-auto text-right">
-            <div>
-              <p className="text-[10px] text-slate-500 uppercase tracking-wide">52W High</p>
-              <p className="font-mono text-xs text-slate-300">{fmt(f.high52w, stock.currency)}</p>
+          <div className="flex gap-3 sm:gap-4 sm:ml-auto text-left sm:text-right overflow-x-auto w-full sm:w-auto">
+            <div className="flex-shrink-0">
+              <p className="text-[9px] sm:text-[10px] text-slate-500 uppercase tracking-wide">52W High</p>
+              <p className="font-mono text-[10px] sm:text-xs text-slate-300">{fmt(f.high52w, stock.currency)}</p>
             </div>
-            <div>
-              <p className="text-[10px] text-slate-500 uppercase tracking-wide">52W Low</p>
-              <p className="font-mono text-xs text-slate-300">{fmt(f.low52w, stock.currency)}</p>
+            <div className="flex-shrink-0">
+              <p className="text-[9px] sm:text-[10px] text-slate-500 uppercase tracking-wide">52W Low</p>
+              <p className="font-mono text-[10px] sm:text-xs text-slate-300">{fmt(f.low52w, stock.currency)}</p>
             </div>
-            <div>
-              <p className="text-[10px] text-slate-500 uppercase tracking-wide">Mkt Cap</p>
-              <p className="font-mono text-xs text-slate-300">{fmtMktCap(f.marketCap, stock.currency)}</p>
+            <div className="flex-shrink-0">
+              <p className="text-[9px] sm:text-[10px] text-slate-500 uppercase tracking-wide">Mkt Cap</p>
+              <p className="font-mono text-[10px] sm:text-xs text-slate-300">{fmtMktCap(f.marketCap, stock.currency)}</p>
             </div>
-            <div>
-              <p className="text-[10px] text-slate-500 uppercase tracking-wide">Volume</p>
-              <p className="font-mono text-xs text-slate-300">{fmtVolume(stock.volume)}</p>
+            <div className="flex-shrink-0">
+              <p className="text-[9px] sm:text-[10px] text-slate-500 uppercase tracking-wide">Volume</p>
+              <p className="font-mono text-[10px] sm:text-xs text-slate-300">{fmtVolume(stock.volume)}</p>
             </div>
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-navy-700/40">
+        <div className="flex border-b border-navy-700/40 overflow-x-auto">
           {(['chart', 'fundamentals', 'news'] as const).map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-5 py-3 text-xs font-semibold capitalize transition-colors border-b-2 ${
+              className={`px-3 sm:px-5 py-2 sm:py-3 text-[10px] sm:text-xs font-semibold capitalize transition-colors border-b-2 whitespace-nowrap ${
                 activeTab === tab
                   ? 'text-accent-cyan border-accent-cyan'
                   : 'text-slate-500 border-transparent hover:text-slate-300'
@@ -136,7 +136,7 @@ export const StockDetailModal: React.FC<Props> = ({ stock, isWatched, onToggleWa
         </div>
 
         {/* Tab content */}
-        <div className="flex-1 overflow-y-auto p-5">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-5">
           {/* CHART TAB */}
           {activeTab === 'chart' && (
             <div>
@@ -155,8 +155,8 @@ export const StockDetailModal: React.FC<Props> = ({ stock, isWatched, onToggleWa
                   </button>
                 ))}
               </div>
-              <ResponsiveContainer width="100%" height={240}>
-                <AreaChart data={chartData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+              <ResponsiveContainer width="100%" height={200}>
+                <AreaChart data={chartData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
                   <defs>
                     <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor={isPositive ? '#00ff87' : '#ff3b5c'} stopOpacity={0.25} />

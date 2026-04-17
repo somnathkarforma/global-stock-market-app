@@ -166,7 +166,7 @@ export const Sidebar: React.FC<Props> = ({
   );
 
   return (
-    <aside className="w-64 flex-shrink-0 bg-surface-1 border-r border-navy-700/40 flex flex-col h-full overflow-hidden">
+    <aside className="w-full lg:w-64 flex-shrink-0 bg-surface-1 border-r border-navy-700/40 flex flex-col h-full overflow-hidden">
       {/* Search */}
       <div className="p-3 border-b border-navy-700/40">
         <div className="relative">
@@ -188,7 +188,7 @@ export const Sidebar: React.FC<Props> = ({
         </div>
         {/* Search dropdown */}
         {showSearch && query.trim() && (
-          <div className="absolute z-30 mt-1 w-56 bg-surface-2 border border-navy-700/60 rounded-lg shadow-xl overflow-hidden animate-slide-up">
+          <div className="absolute z-30 mt-1 left-0 right-0 lg:w-56 bg-surface-2 border border-navy-700/60 rounded-lg shadow-xl overflow-hidden animate-slide-up max-h-[60vh] overflow-y-auto">
             {/* Local mock matches */}
             {localResults.map(s => (
               <button
